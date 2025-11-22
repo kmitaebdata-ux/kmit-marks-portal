@@ -1,164 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KMIT Marks Portal – Admin Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen flex bg-gray-100">
-
-<!-- ERROR BOX -->
-<div id="errorBox" class="hidden m-4 p-3 bg-red-100 text-red-700 text-sm rounded"></div>
-
-<!-- SIDEBAR -->
-<aside id="sidebar" class="hidden w-64 bg-slate-900 text-white flex flex-col">
-  <div class="p-4 border-b border-slate-700 text-lg font-bold">KMIT Admin Panel</div>
-  <nav class="flex-1 p-3 space-y-2 text-sm" id="nav-links">
-    <button data-target="overview" class="w-full text-left px-3 py-2 rounded bg-slate-800">Overview</button>
-    <button data-target="marks" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Marks Management</button>
-    <button data-target="roles" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">User & Role Management</button>
-    <button data-target="bulkroles" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Bulk Role Upload</button>
-    <button data-target="reports" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Reports</button>
-    <button data-target="logs" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">System Logs</button>
-  </nav>
-  <div class="p-3 border-t border-slate-700 text-xs">
-    <div id="admin-email" class="truncate mb-2">Loading...</div>
-    <button id="sign-out-btn" class="w-full bg-red-500 py-2 rounded text-xs">Sign Out</button>
-  </div>
-</aside>
-
-<!-- MAIN APP -->
-<main id="mainApp" class="hidden flex-1 p-6 overflow-y-auto">
-  <!-- OVERVIEW -->
-  <section id="panel-overview">
-    <h2 class="text-2xl font-semibold mb-4">Overview</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-white shadow p-4 rounded">Total Students: —</div>
-      <div class="bg-white shadow p-4 rounded">Active Faculty: —</div>
-      <div class="bg-white shadow p-4 rounded">Pending Approvals: —</div>
-    </div>
-  </section>
-
-  <!-- MARKS MANAGEMENT -->
-  <section id="panel-marks" class="hidden mt-6">
-    <h2 class="text-2xl font-semibold mb-4">Marks Management</h2>
-    <div class="bg-white p-4 shadow rounded mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-      <div>
-        <label class="block mb-1 font-semibold">Batch</label>
-        <input id="marks-batch" class="border p-2 w-full rounded" placeholder="2024-2025" />
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Regulation</label>
-        <select id="marks-reg" class="border p-2 w-full rounded">
-          <option>KR24</option>
-          <option>R23</option>
-          <option>R22</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Branch</label>
-        <select id="marks-branch" class="border p-2 w-full rounded">
-          <option>CSE</option>
-          <option>CSD</option>
-          <option>CSM</option>
-          <option>IT</option>
-          <option>ECE</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Year</label>
-        <select id="marks-year" class="border p-2 w-full rounded">
-          <option>I</option>
-          <option>II</option>
-          <option>III</option>
-          <option>IV</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Semester</label>
-        <select id="marks-sem" class="border p-2 w-full rounded">
-          <option>I</option>
-          <option>II</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-semibold">Exam Type</label>
-        <select id="marks-exam" class="border p-2 w-full rounded">
-          <option value="MID1">I MID</option>
-          <option value="MID2">II MID</option>
-          <option value="SEM">SEMESTER</option>
-        </select>
-      </div>
-    </div>
-
-    <button id="generate-template" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm mb-4">
-      Generate Template (Option A)
-    </button>
-    <div id="template-preview" class="hidden bg-white p-4 shadow rounded overflow-x-auto text-xs"></div>
-  </section>
-
-  <!-- ROLES -->
-  <section id="panel-roles" class="hidden mt-6">
-    <h2 class="text-2xl font-semibold mb-4">User & Role Management</h2>
-    <form id="role-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 shadow rounded">
-      <input name="uid" placeholder="User UID" class="border p-2 rounded text-sm" required />
-      <select name="role" class="border p-2 rounded text-sm">
-        <option value="ADMIN">ADMIN</option>
-        <option value="FACULTY">FACULTY</option>
-        <option value="HOD">HOD</option>
-        <option value="EXAMCELL">EXAMCELL</option>
-      </select>
-      <button class="bg-indigo-600 text-white p-2 rounded text-sm">Save Role</button>
-    </form>
-    <div id="role-status" class="text-xs mt-2 text-slate-600"></div>
-  </section>
-
-  <!-- BULK ROLES -->
-  <section id="panel-bulkroles" class="hidden mt-6">
-    <h2 class="text-2xl font-semibold mb-4">Bulk Role Upload</h2>
-    <div class="bg-white p-4 rounded shadow mb-4">
-      <h3 class="font-semibold mb-2 text-sm">Step 1 — Select CSV File</h3>
-      <input type="file" id="bulk-csv" class="mb-3" />
-      <button id="download-sample" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs">
-        Download Sample CSV
-      </button>
-    </div>
-    <div id="preview-panel" class="hidden bg-white p-4 rounded shadow mb-4">
-      <h3 class="font-semibold mb-2 text-sm">Step 2 — Preview Parsed Data</h3>
-      <table class="w-full text-xs border" id="preview-table"></table>
-    </div>
-    <div id="validate-panel" class="hidden bg-white p-4 rounded shadow mb-4">
-      <button id="validate-csv" class="bg-yellow-600 text-white px-4 py-2 rounded text-sm">Validate CSV</button>
-      <p id="validation-status" class="text-xs mt-2 text-slate-600"></p>
-    </div>
-    <div id="process-panel" class="hidden bg-white p-4 rounded shadow mb-4">
-      <button id="bulk-process" class="bg-emerald-700 text-white px-4 py-2 rounded text-sm">
-        Process & Assign Roles
-      </button>
-    </div>
-    <pre id="bulk-output" class="bg-black text-green-400 p-3 mt-3 text-xs h-64 overflow-auto"></pre>
-  </section>
-
-  <!-- REPORTS -->
-  <section id="panel-reports" class="hidden mt-6">
-    <h2 class="text-2xl font-semibold mb-4">Reports</h2>
-    <p class="text-sm text-slate-600">Reports module placeholder.</p>
-  </section>
-
-  <!-- LOGS -->
-  <section id="panel-logs" class="hidden mt-6">
-    <h2 class="text-2xl font-semibold mb-4">System Logs</h2>
-    <ul id="logs-list" class="text-xs bg-white p-3 shadow rounded h-64 overflow-auto"></ul>
-  </section>
-</main>
-
-<!-- INLINE FIREBASE + ADMIN LOGIC -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signInWithRedirect,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+  // --- Firebase config (FULL) ---
   const firebaseConfig = {
     apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
     authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
@@ -170,20 +28,40 @@
   };
 
   const appId = "kmit-marks-portal";
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
+  // --- DOM refs ---
   const errorBox = document.getElementById("errorBox");
   const sidebar = document.getElementById("sidebar");
   const mainApp = document.getElementById("mainApp");
-  const adminEmailEl = document.getElementById("admin-email");
+  const emailEl = document.getElementById("admin-email");
+  const logsList = document.getElementById("logs-list");
+
+  // --- helpers ---
+  function logEvent(msg, level = "INFO") {
+    if (logsList) {
+      const li = document.createElement("li");
+      const ts = new Date().toLocaleTimeString();
+      li.textContent = `[${ts}] [${level}] ${msg}`;
+      li.className =
+        level === "ERROR"
+          ? "text-red-500"
+          : level === "SUCCESS"
+          ? "text-emerald-600"
+          : "text-slate-600";
+      logsList.prepend(li);
+    }
+    console.log("[ADMIN]", msg);
+  }
 
   function showError(msg) {
     if (!errorBox) return;
-    errorBox.textContent = msg;
     errorBox.classList.remove("hidden");
+    errorBox.textContent = msg;
+    logEvent(msg, "ERROR");
   }
 
   function hideError() {
@@ -192,9 +70,75 @@
     errorBox.textContent = "";
   }
 
-  async function verifyAdminRole(user) {
+  function switchPanel(target) {
+    document
+      .querySelectorAll("main section")
+      .forEach((sec) => sec.classList.add("hidden"));
+    const active = document.getElementById(`panel-${target}`);
+    if (active) active.classList.remove("hidden");
+    logEvent(`Switched to panel: ${target}`);
+  }
+
+  // --- sidebar navigation ---
+  document.querySelectorAll("#nav-links button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document
+        .querySelectorAll("#nav-links button")
+        .forEach((b) => b.classList.remove("bg-slate-800"));
+      btn.classList.add("bg-slate-800");
+      switchPanel(btn.dataset.target);
+    });
+  });
+
+  // --- auth / sign out ---
+  document.getElementById("sign-out-btn")?.addEventListener("click", async () => {
     try {
-      const roleDocRef = doc(
+      await signOut(auth);
+      window.location.reload();
+    } catch (err) {
+      showError("Sign-out failed: " + err.message);
+    }
+  });
+
+  // --- Google Login with unauthorized-domain handling ---
+  async function googleLogin() {
+    hideError();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      if (err.code === "auth/unauthorized-domain") {
+        const host = window.location.hostname;
+        showError(
+          "Firebase Error: auth/unauthorized-domain.\n\n" +
+            "You must add this domain in Firebase Console → Authentication → Settings → Authorized domains:\n" +
+            `   • ${host}\n` +
+            "   • localhost (for local testing)\n\n" +
+            "Project: kmit-marks-portal-9db76"
+        );
+        return;
+      }
+
+      if (err.code === "auth/popup-blocked") {
+        showError(
+          "Popup blocked by browser. Retrying with redirect sign-in..."
+        );
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (e2) {
+          showError("Google Sign-In redirect failed: " + e2.message);
+          return;
+        }
+      }
+
+      showError("Google Sign-In failed: " + (err.message || err.code));
+    }
+  }
+
+  // --- role check (ADMIN only) ---
+  async function checkAdminRole(user) {
+    try {
+      const roleRef = doc(
         db,
         "artifacts",
         appId,
@@ -203,162 +147,360 @@
         "user_config",
         "role"
       );
-      const snap = await getDoc(roleDocRef);
+      const snap = await getDoc(roleRef);
       if (!snap.exists()) {
-        throw new Error("Role document not found for this user.");
-      }
-      const role = String(snap.data().role || "").toUpperCase();
-      if (role !== "ADMIN") {
-        throw new Error(
-          `Access denied. Your role is "${role}". Only ADMIN can open this dashboard.`
+        showError(
+          "Role Not Found / Access Denied.\n\n" +
+            "Create this document in Firestore:\n" +
+            `artifacts/${appId}/users/${user.uid}/user_config/role\n` +
+            'with field: role = "ADMIN" or "FACULTY".'
         );
+        return false;
       }
+      const role = snap.data().role;
+      if (role !== "ADMIN") {
+        showError(
+          `Access Denied. Your role is "${role}". ADMIN role required to open Admin Dashboard.`
+        );
+        return false;
+      }
+      logEvent("Role verified: ADMIN", "SUCCESS");
       return true;
     } catch (err) {
-      console.error("verifyAdminRole error", err);
-      showError(
-        "Admin access check failed: " +
-          (err?.message || JSON.stringify(err))
-      );
+      showError("Error checking role: " + err.message);
       return false;
     }
   }
 
-  function setupNav() {
-    const buttons = document.querySelectorAll("#nav-links button");
-    const panels = document.querySelectorAll("main section");
+  // --- role form (single user) ---
+  const roleForm = document.getElementById("role-form");
+  const roleStatus = document.getElementById("role-status");
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-target");
-        // toggle button styling
-        buttons.forEach((b) =>
-          b.classList.remove("bg-slate-800")
-        );
-        btn.classList.add("bg-slate-800");
+  async function saveUserRole(uid, role, actingUser) {
+    const cleanUid = String(uid || "").trim();
+    const cleanRole = String(role || "").trim().toUpperCase();
+    if (!cleanUid || !cleanRole) throw new Error("UID and role are required");
 
-        // toggle panels
-        panels.forEach((p) => {
-          if (p.id === "panel-" + target) {
-            p.classList.remove("hidden");
-          } else {
-            p.classList.add("hidden");
-          }
-        });
-      });
-    });
+    const roleDocRef = doc(
+      db,
+      "artifacts",
+      appId,
+      "users",
+      cleanUid,
+      "user_config",
+      "role"
+    );
+    const payload = {
+      role: cleanRole,
+      updatedAt: serverTimestamp(),
+      updatedBy: actingUser?.email || actingUser?.uid || null
+    };
+    await setDoc(roleDocRef, payload, { merge: true });
+    return roleDocRef.path;
   }
 
-  function setupMarksTemplateButton() {
-    const btn = document.getElementById("generate-template");
-    const preview = document.getElementById("template-preview");
-    if (!btn || !preview) return;
-
-    btn.addEventListener("click", () => {
-      const batch = document.getElementById("marks-batch").value || "2024-2025";
-      const reg = document.getElementById("marks-reg").value || "KR24";
-      const branch = document.getElementById("marks-branch").value || "CSE";
-      const year = document.getElementById("marks-year").value || "I";
-      const sem = document.getElementById("marks-sem").value || "I";
-      const exam = document.getElementById("marks-exam").value || "MID1";
-
-      // Simple sample template; you can enhance this later.
-      const header = [
-        "SNO",
-        "HALLTICKET",
-        "NAME",
-        "BATCH",
-        "REGULATION",
-        "BRANCH",
-        "YEAR",
-        "SEM",
-        "EXAM",
-        "MARKS"
-      ];
-
-      const rows = [];
-      for (let i = 1; i <= 5; i++) {
-        rows.push([
-          i,
-          "HTNO" + i.toString().padStart(3, "0"),
-          "STUDENT " + i,
-          batch,
-          reg,
-          branch,
-          year,
-          sem,
-          exam,
-          ""
-        ]);
+  if (roleForm && roleStatus) {
+    roleForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!auth.currentUser) {
+        showError("Not authenticated.");
+        return;
       }
-
-      let html = '<table class="min-w-full border text-xs">';
-      html += "<thead><tr>";
-      header.forEach((h) => {
-        html += `<th class="border px-2 py-1 bg-slate-100">${h}</th>`;
-      });
-      html += "</tr></thead><tbody>";
-      rows.forEach((r) => {
-        html += "<tr>";
-        r.forEach((v) => {
-          html += `<td class="border px-2 py-1">${v}</td>`;
-        });
-        html += "</tr>";
-      });
-      html += "</tbody></table>";
-
-      preview.innerHTML = html;
-      preview.classList.remove("hidden");
-    });
-  }
-
-  function setupSignOut() {
-    const btn = document.getElementById("sign-out-btn");
-    if (!btn) return;
-    btn.addEventListener("click", async () => {
+      const data = Object.fromEntries(new FormData(roleForm).entries());
       try {
-        await signOut(auth);
-        window.location.href = "index.html";
+        roleStatus.textContent = "Saving role...";
+        const path = await saveUserRole(
+          data.uid,
+          data.role,
+          auth.currentUser
+        );
+        roleStatus.textContent = `Saved role ${data.role} for UID ${data.uid} at ${path}`;
+        logEvent(`Role updated: ${data.uid} → ${data.role}`, "SUCCESS");
+        roleForm.reset();
       } catch (err) {
-        console.error("Sign-out error", err);
-        showError("Sign-out failed: " + (err?.message || err));
+        roleStatus.textContent = "Error saving role: " + err.message;
+        showError("Error saving role: " + err.message);
       }
     });
   }
 
-  onAuthStateChanged(
-    auth,
-    async (user) => {
-      hideError();
-      if (!user) {
-        // Not logged in -> send back to landing page
-        window.location.href = "index.html";
+  // --- Bulk roles: sample CSV download + validation (no UID lookup) ---
+  const downloadSampleBtn = document.getElementById("download-sample");
+  const bulkCsvInput = document.getElementById("bulk-csv");
+  const previewPanel = document.getElementById("preview-panel");
+  const previewTable = document.getElementById("preview-table");
+  const validatePanel = document.getElementById("validate-panel");
+  const validateBtn = document.getElementById("validate-csv");
+  const validationStatus = document.getElementById("validation-status");
+  const processPanel = document.getElementById("process-panel");
+  const bulkOutput = document.getElementById("bulk-output");
+
+  if (downloadSampleBtn) {
+    downloadSampleBtn.addEventListener("click", () => {
+      const csv = [
+        "name,mobile,email,role",
+        "John Doe,9876543210,john@example.com,FACULTY",
+        "Ravi Kumar,9123456789,ravi@kmit.in,ADMIN",
+        "Sita Rao,9000011111,sita@kmit.in,HOD"
+      ].join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "kmit_bulk_roles_sample.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      logEvent("Sample CSV downloaded");
+    });
+  }
+
+  let parsedRows = [];
+
+  if (bulkCsvInput) {
+    bulkCsvInput.addEventListener("change", async () => {
+      const file = bulkCsvInput.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length <= 1) {
+        showError("CSV has no data rows.");
+        return;
+      }
+      const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+      const required = ["name", "mobile", "email", "role"];
+      const missing = required.filter((r) => !header.includes(r));
+      if (missing.length) {
+        showError("CSV missing required columns: " + missing.join(", "));
         return;
       }
 
-      adminEmailEl.textContent = user.email || "Unknown admin";
+      parsedRows = lines
+        .slice(1)
+        .map((line) => line.split(",").map((v) => v.trim()));
 
-      const ok = await verifyAdminRole(user);
-      if (!ok) return;
+      // Build preview table
+      previewTable.innerHTML = "";
+      const thead = document.createElement("thead");
+      const headRow =
+        document.createElement("tr");
+      header.forEach((h) => {
+        const th = document.createElement("th");
+        th.textContent = h.toUpperCase();
+        th.className = "border px-2 py-1 bg-slate-100";
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      previewTable.appendChild(thead);
 
-      // Show UI
-      sidebar.classList.remove("hidden");
-      mainApp.classList.remove("hidden");
+      const tbody = document.createElement("tbody");
+      parsedRows.forEach((cols) => {
+        const tr = document.createElement("tr");
+        cols.forEach((c) => {
+          const td = document.createElement("td");
+          td.textContent = c;
+          td.className = "border px-2 py-1";
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      previewTable.appendChild(tbody);
 
-      // setup UI handlers
-      setupNav();
-      setupMarksTemplateButton();
-      setupSignOut();
-    },
-    (err) => {
-      console.error("onAuthStateChanged error", err);
-      showError(
-        "Failed to listen to auth state changes: " +
-          (err?.message || err)
+      previewPanel.classList.remove("hidden");
+      validatePanel.classList.remove("hidden");
+      processPanel.classList.add("hidden");
+      bulkOutput.textContent = "";
+      validationStatus.textContent = "";
+      logEvent(
+        `Loaded CSV with ${parsedRows.length} rows for preview.`
       );
-    }
-  );
-</script>
+    });
+  }
 
-</body>
-</html>
+  if (validateBtn) {
+    validateBtn.addEventListener("click", () => {
+      if (!parsedRows.length) {
+        showError("No CSV loaded to validate.");
+        return;
+      }
+      let ok = true;
+      const errors = [];
+      parsedRows.forEach((cols, idx) => {
+        const [name, mobile, email, role] = cols;
+        if (!name || !mobile || !email || !role) {
+          ok = false;
+          errors.push(`Row ${idx + 2}: missing value(s).`);
+        }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          ok = false;
+          errors.push(`Row ${idx + 2}: invalid email → ${email}`);
+        }
+        if (!/^(ADMIN|FACULTY|HOD|EXAMCELL)$/i.test(role)) {
+          ok = false;
+          errors.push(`Row ${idx + 2}: invalid role → ${role}`);
+        }
+      });
+
+      if (ok) {
+        validationStatus.textContent =
+          "CSV valid. You can now Process & Assign Roles (this will write to Firestore).";
+        validationStatus.className = "text-xs mt-2 text-emerald-600";
+        processPanel.classList.remove("hidden");
+        bulkOutput.textContent = "";
+        logEvent("CSV validation passed", "SUCCESS");
+      } else {
+        validationStatus.textContent =
+          "Validation failed. See details below.";
+        validationStatus.className = "text-xs mt-2 text-red-600";
+        bulkOutput.textContent = errors.join("\n");
+        processPanel.classList.add("hidden");
+        logEvent("CSV validation failed", "ERROR");
+      }
+    });
+  }
+
+  const bulkProcessBtn = document.getElementById("bulk-process");
+  if (bulkProcessBtn) {
+    bulkProcessBtn.addEventListener("click", async () => {
+      if (!auth.currentUser) {
+        showError("Not authenticated.");
+        return;
+      }
+      if (!parsedRows.length) {
+        showError("No parsed rows to process.");
+        return;
+      }
+      const results = [];
+      for (let i = 0; i < parsedRows.length; i++) {
+        const [name, mobile, email, role] = parsedRows[i];
+        try {
+          // NOTE: real UID lookup by email requires enabling Identity Toolkit API.
+          results.push(
+            `READY: ${email} → ROLE=${role.toUpperCase()} (UID lookup not performed in this client demo).`
+          );
+        } catch (err) {
+          results.push(
+            `ERROR processing row ${i + 2}: ${err.message}`
+          );
+        }
+      }
+      bulkOutput.textContent = results.join("\n");
+      logEvent(
+        `Bulk role process simulated for ${parsedRows.length} rows.`
+      );
+    });
+  }
+
+  // --- Marks template generation (Option A) ---
+  const generateTemplateBtn = document.getElementById(
+    "generate-template"
+  );
+  const templatePreview = document.getElementById("template-preview");
+
+  if (generateTemplateBtn && templatePreview) {
+    generateTemplateBtn.addEventListener("click", () => {
+      const batch =
+        document.getElementById("marks-batch").value || "2024-2025";
+      const reg = document.getElementById("marks-reg").value;
+      const branch = document.getElementById("marks-branch").value;
+      const year = document.getElementById("marks-year").value;
+      const sem = document.getElementById("marks-sem").value;
+      const examVal = document.getElementById("marks-exam").value;
+      const examTitle =
+        examVal === "MID1"
+          ? "I MID"
+          : examVal === "MID2"
+          ? "II MID"
+          : "SEMESTER";
+
+      const html = `
+        <div class="text-center mb-3">
+          <h2 class="font-bold text-lg">KESHAV MEMORIAL INSTITUTE OF TECHNOLOGY</h2>
+          <h3 class="font-semibold text-sm mt-1">${year} YEAR ${branch} - ${sem} SEMESTER - ${examTitle} (${batch})</h3>
+          <h4 class="font-semibold text-xs mt-1">REGULATION – ${reg}</h4>
+        </div>
+        <table class="min-w-max border text-[10px] border-collapse">
+          <thead>
+            <tr class="bg-blue-200">
+              <th class="border px-2">S.No</th>
+              <th class="border px-2">Hall Ticket No</th>
+              <th class="border px-2">Name of Student</th>
+              <th colspan="10" class="border px-2">PART B – DESCRIPTIVE (15 Marks)</th>
+              <th class="border px-2">PART C (5)</th>
+              <th class="border px-2">ASSNT (10)</th>
+              <th class="border px-2">PART A OBJ (10)</th>
+              <th class="border px-2">DESC (15)</th>
+              <th class="border px-2">TOTAL 40</th>
+              <th class="border px-2">IN WORDS</th>
+              <th class="border px-2">REMARKS</th>
+            </tr>
+            <tr class="bg-blue-100">
+              <th colspan="3"></th>
+              <th class="border px-1">1a</th>
+              <th class="border px-1">1b</th>
+              <th class="border px-1">2a</th>
+              <th class="border px-1">2b</th>
+              <th class="border px-1">3a</th>
+              <th class="border px-1">3b</th>
+              <th class="border px-1">4a</th>
+              <th class="border px-1">4b</th>
+              <th class="border px-1">5a</th>
+              <th class="border px-1">5b</th>
+              <th colspan="7"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Array(10)
+              .fill(0)
+              .map(
+                (_, i) => `
+              <tr>
+                <td class="border px-2">${i + 1}</td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                ${Array(10)
+                  .fill('<td class="border px-2"></td>')
+                  .join("")}
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+                <td class="border px-2"></td>
+              </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>
+        <div class="flex justify-between text-xs mt-6 px-10">
+          <div>Signature of Faculty</div>
+          <div>Signature of HOD</div>
+          <div>Signature of Principal</div>
+        </div>
+      `;
+
+      templatePreview.innerHTML = html;
+      templatePreview.classList.remove("hidden");
+      logEvent("Marks template (Option A) generated.", "SUCCESS");
+    });
+  }
+
+  // --- AUTH STATE ---
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      await googleLogin();
+      return;
+    }
+
+    const ok = await checkAdminRole(user);
+    if (!ok) return;
+
+    if (sidebar) sidebar.classList.remove("hidden");
+    if (mainApp) mainApp.classList.remove("hidden");
+    if (emailEl) emailEl.textContent = user.email || user.uid;
+    switchPanel("overview");
+    logEvent("Authenticated as " + (user.email || user.uid), "SUCCESS");
+  });
+</script>
