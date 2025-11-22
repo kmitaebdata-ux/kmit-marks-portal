@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KMIT Marks Portal – Admin Dashboard v2 (Fixed Unauthorized Domain)</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+  section {
+    transition: opacity 0.3s ease;
+  }
+</style>
+
 </head>
 <body class="min-h-screen flex bg-gray-100">
 
@@ -85,6 +91,74 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+/* --------------------------------------
+   IMPROVED SIDEBAR NAVIGATION SYSTEM
+----------------------------------------- */
+
+// Select all nav buttons and panels
+const navButtons = document.querySelectorAll("#nav-links button");
+const panels = {
+  overview: document.getElementById("panel-overview"),
+  marks: document.getElementById("panel-marks"),
+  roles: document.getElementById("panel-roles"),
+  bulkroles: document.getElementById("panel-bulkroles"),
+  reports: document.getElementById("panel-reports"),
+  logs: document.getElementById("panel-logs")
+};
+
+// Hide all panels
+function hideAllPanels() {
+  Object.values(panels).forEach(p => {
+    p.classList.add("hidden");
+    p.style.opacity = 0;
+  });
+}
+
+// Show panel with fade-in animation
+function showPanel(panel) {
+  panel.classList.remove("hidden");
+  panel.style.opacity = 0;
+
+  setTimeout(() => {
+    panel.style.transition = "opacity 0.25s";
+    panel.style.opacity = 1;
+  }, 10);
+}
+
+// Set active button style
+function setActiveButton(btn) {
+  navButtons.forEach(b => b.classList.remove("bg-slate-800"));
+  btn.classList.add("bg-slate-800");
+}
+
+// Save last opened panel
+function saveLastPanel(panelName) {
+  localStorage.setItem("last_panel", panelName);
+}
+
+// Load last opened panel
+function loadLastPanel() {
+  const last = localStorage.getItem("last_panel") || "overview";
+  const btn = document.querySelector(`[data-target="${last}"]`);
+  if (btn) btn.click();
+}
+
+// Button click event listeners
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.target;
+
+    setActiveButton(btn);
+    hideAllPanels();
+    showPanel(panels[target]);
+    saveLastPanel(target);
+  });
+});
+
+// Run after login
+window.loadAdminUI = function () {
+  setTimeout(loadLastPanel, 200);
+};
 
 // --- FIX: FULL VALID FIREBASE CONFIG ---
 const firebaseConfig = {
@@ -184,7 +258,11 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   const ok = await checkRole(user);
-  if (ok) showApp(user);
+ if (ok) {
+  showApp(user);
+  if (window.loadAdminUI) window.loadAdminUI(); // Load last visited panel
+}
+
   // Show Overview by default
   document.querySelector('[data-target="overview"]').click();
 
@@ -192,4 +270,5 @@ onAuthStateChanged(auth, async (user) => {
 </script>
 </body>
 </html>
+
 
