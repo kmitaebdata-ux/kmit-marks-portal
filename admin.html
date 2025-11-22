@@ -126,6 +126,35 @@ async function checkRole(user) {
   }
   return true;
 }
+// --- SIDEBAR NAVIGATION HANDLER ---
+const navButtons = document.querySelectorAll("#nav-links button");
+const panels = {
+  overview: document.getElementById("panel-overview"),
+  marks: document.getElementById("panel-marks"),
+  roles: document.getElementById("panel-roles"),
+  bulkroles: document.getElementById("panel-bulkroles"),
+  reports: document.getElementById("panel-reports"),
+  logs: document.getElementById("panel-logs")
+};
+
+// Hide all panels
+function hideAllPanels() {
+  Object.values(panels).forEach(p => p.classList.add("hidden"));
+}
+
+// Sidebar button click
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.target;
+
+    // Reset button background highlight
+    navButtons.forEach(b => b.classList.remove("bg-slate-800"));
+    btn.classList.add("bg-slate-800");
+
+    hideAllPanels();
+    panels[target].classList.remove("hidden");
+  });
+});
 
 // Login handler
 async function googleLogin() {
@@ -156,7 +185,11 @@ onAuthStateChanged(auth, async (user) => {
   }
   const ok = await checkRole(user);
   if (ok) showApp(user);
+  // Show Overview by default
+  document.querySelector('[data-target="overview"]').click();
+
 });
 </script>
 </body>
 </html>
+
