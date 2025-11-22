@@ -41,6 +41,7 @@
     <button data-target="marks" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Marks Management</button>
     <button data-target="roles" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">User & Role Management</button>
     <button data-target="rolemanager" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Role Manager</button>
+    <button data-target="users" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Users Directory</button>
     <button data-target="bulkroles" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Bulk Role Upload</button>
     <button data-target="reports" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Reports</button>
     <button data-target="logs" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">System Logs</button>
@@ -96,7 +97,7 @@
           <option>CSE</option>
           <option>CSD</option>
           <option>CSM</option>
-          <option>IT</option>
+          <option>IT</</option>
           <option>ECE</option>
         </select>
       </div>
@@ -241,6 +242,29 @@
         />
       </div>
 
+      <div>
+        <label class="block font-semibold mb-1">Target User Email (optional)</label>
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <input
+              id="rm-email"
+              class="flex-1 border border-slate-300 rounded px-2 py-1 text-xs"
+              placeholder="user@example.com"
+            />
+            <button
+              id="rm-email-search"
+              class="px-3 py-1.5 rounded bg-slate-800 text-white text-[11px] hover:bg-slate-900"
+              type="button"
+            >
+              Search by Email
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            If email is stored in Firestore, search will auto-fill UID & current role.
+          </p>
+        </div>
+      </div>
+
       <div class="flex flex-wrap items-center gap-2">
         <button
           id="rm-load"
@@ -273,6 +297,43 @@
           Save Role
         </button>
         <span id="rm-status" class="text-[11px] text-slate-600"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- USERS DIRECTORY -->
+  <section id="panel-users" class="hidden">
+    <h2 class="text-2xl font-semibold mb-2">Users Directory</h2>
+    <p class="text-xs text-slate-500 mb-4">
+      Listing users from Firestore role documents:
+      <code class="bg-slate-100 px-1 rounded">artifacts/kmit-marks-portal/users/{uid}/user_config/role</code>.
+      Only <span class="font-semibold">ADMIN</span> can view this.
+    </p>
+
+    <div class="bg-white rounded shadow p-4 text-xs">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <button
+          id="users-reload"
+          class="px-3 py-1.5 rounded bg-slate-800 text-white text-[11px] hover:bg-slate-900"
+          type="button"
+        >
+          Reload Users
+        </button>
+        <span id="users-status" class="text-[11px] text-slate-600"></span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full border border-slate-200 text-[11px]">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="border border-slate-200 px-2 py-1 text-left">Email</th>
+              <th class="border border-slate-200 px-2 py-1 text-left">UID</th>
+              <th class="border border-slate-200 px-2 py-1 text-left">Role</th>
+              <th class="border border-slate-200 px-2 py-1 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -335,7 +396,8 @@
     query,
     where,
     getDocs,
-    setDoc
+    setDoc,
+    collectionGroup
   } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   // --- FIREBASE CONFIG ---
@@ -354,6 +416,8 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
+
+  let currentAdmin = null;
 
   function showError(msg) {
     const box = document.getElementById("errorBox");
@@ -427,6 +491,7 @@
     }
     const ok = await checkRole(user);
     if (ok) {
+      currentAdmin = user;
       showApp(user);
     }
   });
@@ -471,6 +536,7 @@
     marks: document.getElementById("panel-marks"),
     roles: document.getElementById("panel-roles"),
     rolemanager: document.getElementById("panel-rolemanager"),
+    users: document.getElementById("panel-users"),
     bulkroles: document.getElementById("panel-bulkroles"),
     reports: document.getElementById("panel-reports"),
     logs: document.getElementById("panel-logs")
@@ -515,6 +581,11 @@
       saveLastPanel(target);
       // close sidebar on mobile
       if (window.innerWidth < 768) closeSidebarMobile();
+
+      // lazy load users when opening Users Directory
+      if (target === "users") {
+        loadAllUsers();
+      }
     });
   });
 
@@ -670,7 +741,6 @@
 
           if (!data.subjectName || !data.subjectCode) continue;
 
-          // Use subjectCode + combination as ID to avoid duplicates
           const id =
             data.reg +
             "_" +
@@ -810,7 +880,6 @@
     });
     html += `</tr></thead><tbody>`;
 
-    // 10 sample rows
     for (let i = 1; i <= 10; i++) {
       html += "<tr>";
       columns.forEach((col, idx) => {
@@ -864,11 +933,13 @@
      ROLE MANAGER PANEL (panel-rolemanager)
   -------------------------------------- */
   const rmUidInput = document.getElementById("rm-uid");
+  const rmEmailInput = document.getElementById("rm-email");
   const rmRoleSelect = document.getElementById("rm-role");
   const rmLoadBtn = document.getElementById("rm-load");
   const rmSaveBtn = document.getElementById("rm-save");
   const rmStatus = document.getElementById("rm-status");
   const rmCurrentRole = document.getElementById("rm-current-role");
+  const rmEmailSearchBtn = document.getElementById("rm-email-search");
 
   async function loadRoleForUid() {
     rmStatus.textContent = "";
@@ -895,12 +966,17 @@
         rmCurrentRole.textContent = "No role set for this UID.";
         rmRoleSelect.value = "FACULTY";
         rmStatus.textContent = "";
+        rmEmailInput.value = "";
         return;
       }
-      const role = (snap.data().role || "").toUpperCase();
+      const data = snap.data() || {};
+      const role = (data.role || "").toUpperCase();
       rmCurrentRole.textContent = `Current role: ${role}`;
       if (["ADMIN", "FACULTY", "HOD", "EXAMCELL", "NONE"].includes(role)) {
         rmRoleSelect.value = role;
+      }
+      if (data.email) {
+        rmEmailInput.value = data.email;
       }
       rmStatus.textContent = "";
     } catch (err) {
@@ -912,11 +988,52 @@
     rmLoadBtn.addEventListener("click", loadRoleForUid);
   }
 
+  if (rmEmailSearchBtn) {
+    rmEmailSearchBtn.addEventListener("click", async () => {
+      const email = (rmEmailInput?.value || "").trim().toLowerCase();
+      rmStatus.textContent = "";
+      rmCurrentRole.textContent = "";
+
+      if (!email) {
+        rmStatus.textContent = "Enter an email to search.";
+        return;
+      }
+
+      try {
+        rmStatus.textContent = "Searching by email…";
+        const cg = collectionGroup(db, "user_config");
+        const snap = await getDocs(cg);
+        let foundDoc = null;
+        snap.forEach((d) => {
+          if (foundDoc) return;
+          const data = d.data() || {};
+          if ((data.email || "").toLowerCase() === email) {
+            foundDoc = d;
+          }
+        });
+
+        if (!foundDoc) {
+          rmStatus.textContent = "No user found with that email in role docs.";
+          return;
+        }
+
+        const pathSeg = foundDoc.ref.path.split("/");
+        const uid = pathSeg[3] || "";
+        rmUidInput.value = uid;
+        rmStatus.textContent = `Found UID: ${uid}`;
+        await loadRoleForUid();
+      } catch (err) {
+        rmStatus.textContent = "Error searching by email: " + err.message;
+      }
+    });
+  }
+
   if (rmSaveBtn) {
     rmSaveBtn.addEventListener("click", async () => {
       rmStatus.textContent = "";
       const uid = (rmUidInput?.value || "").trim();
       const role = rmRoleSelect?.value;
+      const email = (rmEmailInput?.value || "").trim();
 
       if (!uid) {
         rmStatus.textContent = "Enter a UID first.";
@@ -930,9 +1047,12 @@
       try {
         rmStatus.textContent = "Saving role…";
         const newRoleValue = role === "NONE" ? null : role;
+        const payload = { role: newRoleValue };
+        if (email) payload.email = email;
+
         await setDoc(
           doc(db, "artifacts", appId, "users", uid, "user_config", "role"),
-          { role: newRoleValue },
+          payload,
           { merge: true }
         );
         rmStatus.textContent = `Role updated to ${role} for UID ${uid}.`;
@@ -941,6 +1061,100 @@
         rmStatus.textContent = "Error saving role: " + err.message;
       }
     });
+  }
+
+  /* --------------------------------------
+     USERS DIRECTORY PANEL
+  -------------------------------------- */
+  const usersReloadBtn = document.getElementById("users-reload");
+  const usersStatus = document.getElementById("users-status");
+  const usersTableBody = document.getElementById("users-table-body");
+
+  async function loadAllUsers() {
+    if (!usersTableBody) return;
+    usersStatus.textContent = "Loading users…";
+    usersTableBody.innerHTML = "";
+
+    try {
+      const cg = collectionGroup(db, "user_config");
+      const snap = await getDocs(cg);
+      let count = 0;
+
+      snap.forEach((docSnap) => {
+        const data = docSnap.data() || {};
+        const pathSeg = docSnap.ref.path.split("/");
+        const uid = pathSeg[3] || "";
+        const role = (data.role || "").toUpperCase();
+        const email = data.email || "";
+
+        const tr = document.createElement("tr");
+
+        const tdEmail = document.createElement("td");
+        tdEmail.className = "border border-slate-200 px-2 py-1";
+        tdEmail.textContent = email || "-";
+
+        const tdUid = document.createElement("td");
+        tdUid.className = "border border-slate-200 px-2 py-1 font-mono text-[10px]";
+        tdUid.textContent = uid;
+
+        const tdRole = document.createElement("td");
+        tdRole.className = "border border-slate-200 px-2 py-1";
+        tdRole.textContent = role || "-";
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "border border-slate-200 px-2 py-1 space-x-1";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className =
+          "px-2 py-0.5 rounded border border-slate-300 text-[10px] hover:bg-slate-100";
+        copyBtn.textContent = "Copy UID";
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(uid);
+            usersStatus.textContent = `Copied UID: ${uid}`;
+          } catch {
+            usersStatus.textContent = "Failed to copy UID.";
+          }
+        });
+
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className =
+          "px-2 py-0.5 rounded border border-indigo-400 text-[10px] hover:bg-indigo-50";
+        editBtn.textContent = "Edit Role";
+        editBtn.addEventListener("click", async () => {
+          const rmBtn = document.querySelector('[data-target="rolemanager"]');
+          if (rmBtn) rmBtn.click();
+          if (rmUidInput) rmUidInput.value = uid;
+          if (rmEmailInput) rmEmailInput.value = email || "";
+          await loadRoleForUid();
+        });
+
+        tdActions.appendChild(copyBtn);
+        tdActions.appendChild(editBtn);
+
+        tr.appendChild(tdEmail);
+        tr.appendChild(tdUid);
+        tr.appendChild(tdRole);
+        tr.appendChild(tdActions);
+
+        usersTableBody.appendChild(tr);
+        count++;
+      });
+
+      if (!count) {
+        usersStatus.textContent = "No users found in role docs.";
+      } else {
+        usersStatus.textContent = `Loaded ${count} user(s).`;
+      }
+    } catch (err) {
+      usersStatus.textContent = "Error loading users: " + err.message;
+    }
+  }
+
+  if (usersReloadBtn) {
+    usersReloadBtn.addEventListener("click", loadAllUsers);
   }
 </script>
 </body>
