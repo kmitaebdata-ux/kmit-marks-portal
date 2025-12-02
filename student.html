@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KMIT Marks Portal – Student Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass {
+      backdrop-filter: blur(18px);
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex text-slate-100">
+
+  <main class="flex-1 flex flex-col p-3 md:p-5 gap-3 max-w-5xl mx-auto w-full">
+
+    <!-- TOP BAR -->
+    <header class="glass rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-lg">
+          🎓
+        </div>
+        <div>
+          <h2 class="text-lg md:text-xl font-semibold" id="stuName">Student Name</h2>
+          <p class="text-[11px] md:text-xs text-slate-300" id="stuRoll">
+            Hallticket: –
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <div class="text-right">
+          <div id="stuBranchSem" class="text-slate-200 text-[11px]">Branch • Sem</div>
+        </div>
+        <button id="stuLogout"
+                class="text-[11px] px-3 py-1 rounded-full bg-red-500 hover:bg-red-600 text-white">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- SUMMARY CARDS -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="glass rounded-2xl p-4 shadow-lg">
+        <div class="text-[11px] text-slate-300">Overall Percentage</div>
+        <div id="stuOverallPercent" class="text-2xl font-bold mt-1 text-emerald-300">–</div>
+      </div>
+      <div class="glass rounded-2xl p-4 shadow-lg">
+        <div class="text-[11px] text-slate-300">Subjects Passed</div>
+        <div id="stuPassedCount" class="text-2xl font-bold mt-1 text-indigo-300">–</div>
+      </div>
+      <div class="glass rounded-2xl p-4 shadow-lg">
+        <div class="text-[11px] text-slate-300">Backlogs</div>
+        <div id="stuBacklogs" class="text-2xl font-bold mt-1 text-rose-300">–</div>
+      </div>
+    </section>
+
+    <!-- MAIN CONTENT: MARKS TABLE -->
+    <section class="glass rounded-2xl p-4 md:p-5 shadow-xl flex flex-col flex-1">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="font-semibold text-sm">Marks Details</h3>
+          <p class="text-[11px] text-slate-300">
+            Internal, External, and Total marks by subject.
+          </p>
+        </div>
+        <button id="stuDownload"
+                class="text-[11px] px-3 py-1 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">
+          Download PDF
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-auto rounded-xl bg-slate-900/50 border border-slate-700 text-xs">
+        <table class="min-w-full text-left">
+          <thead class="bg-slate-800/70 text-[11px] text-slate-300 sticky top-0">
+            <tr>
+              <th class="px-3 py-2">Code</th>
+              <th class="px-3 py-2">Subject</th>
+              <th class="px-3 py-2 text-center">Internal</th>
+              <th class="px-3 py-2 text-center">External</th>
+              <th class="px-3 py-2 text-center">Total</th>
+              <th class="px-3 py-2 text-center">Result</th>
+            </tr>
+          </thead>
+          <tbody id="stuMarksBody" class="divide-y divide-slate-800">
+            <tr>
+              <td colspan="6" class="px-3 py-4 text-center text-slate-300">
+                Marks not loaded yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NOTICE FOOTER -->
+    <footer class="glass rounded-2xl h-14 mt-2 px-4 flex items-center text-xs shadow-lg">
+      <div class="font-semibold mr-3 text-indigo-200">Notices</div>
+      <div id="stuNoticeBar" class="flex-1 overflow-x-auto whitespace-nowrap text-slate-200 text-[11px]">
+        Loading notices...
+      </div>
+    </footer>
+  </main>
+
+  <!-- Firebase compat (for easy reuse of patterns) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- TODO: create student.js and hook Firestore marks -->
+  <script src="student.js"></script>
+</body>
+</html>
