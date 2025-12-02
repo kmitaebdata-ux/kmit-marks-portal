@@ -1,35 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KMIT Marks Portal – Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+  <!-- LOGIN CARD -->
   <div class="w-full max-w-md bg-white shadow-lg rounded-xl p-6 relative z-10">
     <h2 class="text-2xl font-bold text-center mb-6">KMIT Marks Portal</h2>
 
     <!-- Custom User ID Login -->
-    <input id="customId" class="w-full border p-2 rounded mb-3" type="text" placeholder="User ID (e.g., Hall Ticket)" />
-    <input id="password" class="w-full border p-2 rounded mb-3" type="password" placeholder="Password" />
-    <button id="emailLogin" class="w-full bg-blue-600 text-white py-2 rounded mb-4">Login</button>
+    <input id="customId" class="w-full border p-2 rounded mb-3" type="text"
+           placeholder="User ID (e.g., Hall Ticket)" />
+    <input id="password" class="w-full border p-2 rounded mb-3" type="password"
+           placeholder="Password" />
+    <button id="emailLogin" class="w-full bg-blue-600 text-white py-2 rounded mb-4">
+      Login
+    </button>
 
     <div class="text-center my-2 text-gray-500">or</div>
 
     <!-- Google Button -->
-    <button id="googleSignIn" class="w-full bg-red-600 text-white py-2 rounded mb-4">Sign in with Google</button>
+    <button id="googleSignIn" class="w-full bg-red-600 text-white py-2 rounded mb-4">
+      Sign in with Google
+    </button>
 
     <p id="errorBox" class="text-red-600 text-center mt-2 hidden"></p>
   </div>
 
   <!-- Loading Overlay -->
-  <div id="loader" class="fixed inset-0 bg-black/20 flex items-center justify-center hidden z-20">
+  <div id="loader"
+       class="fixed inset-0 bg-black/20 flex items-center justify-center hidden z-20">
     <div class="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
   </div>
 
   <!-- Notice Board -->
-  <div id="noticeBoard" class="fixed bottom-4 right-4 bg-white shadow-xl rounded-lg p-4 w-80 hidden z-10">
+  <div id="noticeBoard"
+       class="fixed bottom-4 right-4 bg-white shadow-xl rounded-lg p-4 w-80 hidden z-10">
     <div class="flex items-center justify-between mb-2">
       <h3 class="font-bold text-sm">Notices</h3>
       <button id="closeNotice" class="text-xs text-gray-500 hover:text-gray-700">✕</button>
@@ -39,11 +50,6 @@
 
   <!-- Firebase v10 Modular SDK -->
   <script type="module">
-      const debugAuth = getAuth();
-debugAuth.onAuthStateChanged(u => {
-  console.log("DEBUG: Logged-in UID =", u?.uid);
-});
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getAuth,
@@ -63,382 +69,184 @@ debugAuth.onAuthStateChanged(u => {
       getDocs,
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-      const debugAuth = getAuth();
-debugAuth.onAuthStateChanged(u => {
-  console.log("DEBUG: Logged-in UID =", u?.uid);
-});
+
+    /* -------------------------------------------------
+       CONFIGURE FIREBASE PROJECT
+    --------------------------------------------------- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
+      authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
+      projectId: "kmit-marks-portal-9db76",
+      storageBucket: "kmit-marks-portal-9db76.firebasestorage.app",
+      messagingSenderId: "264909025742",
+      appId: "1:264909025742:web:84de5216860219e6bc3b9f",
+      measurementId: "G-JMZ564P8PJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
 
-    // -------------------------------------------------
-    // Helper: show error message in the UI
-    // -------------------------------------------------
+    /* -------------------------------------------------
+       DEBUG UID LOGGING
+    --------------------------------------------------- */
+    auth.onAuthStateChanged(u => {
+      console.log("DEBUG: Logged-in UID =", u?.uid);
+    });
+
+
+    /* -------------------------------------------------
+       UI Helper Functions
+    --------------------------------------------------- */
     const showError = (msg) => {
       const box = document.getElementById("errorBox");
-      if (!box) {
-        console.error("Error box element not found", msg);
-        return;
-      }
       box.textContent = msg;
       box.classList.remove("hidden");
     };
 
     const setLoading = (isLoading) => {
       const loader = document.getElementById("loader");
-      if (!loader) return;
       if (isLoading) loader.classList.remove("hidden");
       else loader.classList.add("hidden");
     };
 
-    // -------------------------------------------------
-    // Firebase Config (REAL PROJECT CONFIG)
-    // -------------------------------------------------
-  const firebaseConfig = {
-  apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
-  authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
-  projectId: "kmit-marks-portal-9db76",
-  storageBucket: "kmit-marks-portal-9db76.firebasestorage.app",
-  messagingSenderId: "264909025742",
-  appId: "1:264909025742:web:84de5216860219e6bc3b9f",
-  measurementId: "G-JMZ564P8PJ"
-};
 
-    // Minimal validation to avoid invalid/empty API key scenarios
-    function isFirebaseConfigValid(cfg) {
-      const requiredKeys = ["apiKey", "authDomain", "projectId", "appId"];
-      return requiredKeys.every((key) => {
-        const val = cfg[key];
-        return typeof val === "string" && val.trim() !== "";
-      });
+    /* -------------------------------------------------
+       CUSTOM ID LOGIN
+    --------------------------------------------------- */
+    async function signInWithCustomId(customId, password) {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("customUserId", "==", customId));
+      const snap = await getDocs(q);
+
+      if (snap.empty) throw new Error("Invalid User ID or Password.");
+
+      const user = snap.docs[0].data();
+      return await signInWithEmailAndPassword(auth, user.email, password);
     }
 
-    // Friendly auth error mapper – helps debug Google Sign-In issues
-    function mapAuthErrorToMessage(err) {
-      if (!err || typeof err !== "object") return "Unknown error";
-      const code = err.code || "";
-      switch (code) {
-        case "auth/operation-not-allowed":
-          return "Google Sign-In is not enabled in Firebase Authentication. Enable it under Authentication → Sign-in method → Google.";
-        case "auth/unauthorized-domain":
-          return "This domain is not authorized for OAuth. Add your domain in Firebase Console → Authentication → Settings → Authorized domains.";
-        case "auth/popup-blocked":
-          return "The sign-in popup was blocked by the browser. Please allow popups and try again.";
-        case "auth/popup-closed-by-user":
-          return "The sign-in popup was closed before completing. Please try again.";
-        case "auth/cancelled-popup-request":
-          return "Another sign-in attempt was in progress. Please try again.";
-        default:
-          return err.message || "Unknown authentication error";
-      }
-    }
 
-    let app, auth, db;
+    /* -------------------------------------------------
+       ROLE-BASED REDIRECT
+    --------------------------------------------------- */
+    async function handleRoleRedirect(user) {
+      const roleRef = doc(db, "roles", user.uid);
+      let roleSnap = await getDoc(roleRef);
 
-    try {
-      if (!isFirebaseConfigValid(firebaseConfig)) {
-        throw new Error(
-          "Missing or invalid Firebase configuration. Please paste a valid Firebase web app config."
-        );
+      // Auto-create STUDENT role if missing
+      if (!roleSnap.exists()) {
+        await setDoc(roleRef, { role: "STUDENT" });
+        roleSnap = await getDoc(roleRef);
       }
 
-      app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-    } catch (err) {
-      console.error("Firebase initialization error:", err);
-      showError("Portal is not configured correctly. Please contact the administrator.");
+      const role = roleSnap.data().role;
+
+      if (role === "ADMIN") window.location.href = "admin.html";
+      else if (role === "FACULTY") window.location.href = "faculty.html";
+      else window.location.href = "student.html";
     }
 
-    // Small sanity tests for helpers (dev-only, non-breaking)
-    (function testHelpers() {
+
+    /* -------------------------------------------------
+       POST LOGIN HANDLER
+    --------------------------------------------------- */
+    async function handlePostLogin(user) {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await handleRoleRedirect(user);
+        return;
+      }
+
+      const data = userSnap.data();
+      if (data.mustChangePassword === true) {
+        window.location.href = "change-password.html";
+        return;
+      }
+
+      await handleRoleRedirect(user);
+    }
+
+
+    /* -------------------------------------------------
+       BUTTON: EMAIL LOGIN
+    --------------------------------------------------- */
+    document.getElementById("emailLogin").addEventListener("click", async () => {
+      const id = document.getElementById("customId").value.trim();
+      const pw = document.getElementById("password").value.trim();
+
+      if (!id || !pw) return showError("Enter User ID and Password.");
+
       try {
-        // isFirebaseConfigValid tests
-        const goodCfg = {
-          apiKey: "x",
-          authDomain: "a",
-          projectId: "p",
-          appId: "id"
-        };
-        const badCfg = {
-          apiKey: "",
-          authDomain: " ",
-          projectId: "p",
-          appId: "id"
-        };
-        if (!isFirebaseConfigValid(goodCfg) || isFirebaseConfigValid(badCfg)) {
-          console.warn("Config helper test failed");
-        }
-      } catch (e) {
-        console.warn("Helper tests error", e);
+        setLoading(true);
+        const cred = await signInWithCustomId(id, pw);
+        await handlePostLogin(cred.user);
+      } catch (err) {
+        console.error(err);
+        showError(err.message);
+      } finally {
+        setLoading(false);
       }
-    })();
+    });
 
-    if (!auth || !db) {
-      console.warn("Firebase not initialized – check firebaseConfig values and origins.");
-    } else {
-      // ----------------------------
-      // Custom ID SIGN-UP LOGIC (helper, to be used from admin page)
-      // ----------------------------
-      async function signUpWithCustomId(customId, password, name, mobile, email) {
-        const usersRef = collection(db, "users");
 
-        // 1. Check if the customId is already taken
-        const q = query(usersRef, where("customUserId", "==", customId));
-        const existingUser = await getDocs(q);
-        if (!existingUser.empty) {
-          throw new Error("This User ID is already taken. Please choose another.");
-        }
+    /* -------------------------------------------------
+       GOOGLE SIGN-IN
+    --------------------------------------------------- */
+    document.getElementById("googleSignIn").addEventListener("click", async () => {
+      try {
+        setLoading(true);
 
-        // 2. Create the user in Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
 
-        // 3. Save the full user details to the database (using UID as document ID)
-        await setDoc(doc(db, "users", uid), {
-          uid: uid,
-          customUserId: customId,
-          name: name,
-          mobile: mobile,
-          email: email,
-          mustChangePassword: true // default so they are forced to change on first login (optional)
-        });
+        await handlePostLogin(user);
 
-        return userCredential.user;
+      } catch (err) {
+        console.error("Google login error:", err);
+        showError(err.message);
+      } finally {
+        setLoading(false);
       }
+    });
 
-      // ----------------------------
-      // Custom ID SIGN-IN LOGIC
-      // ----------------------------
-      async function signInWithCustomId(customId, password) {
-        const usersRef = collection(db, "users");
-        const q = query(usersRef, where("customUserId", "==", customId), where("email", "!=", null));
-        const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-          throw new Error("Invalid User ID or Password.");
-        }
+    /* -------------------------------------------------
+       NOTICE BOARD
+    --------------------------------------------------- */
+    async function loadNotices() {
+      try {
+        const q = query(collection(db, "notices"), where("active", "==", true));
+        const snap = await getDocs(q);
 
-        const userData = querySnapshot.docs[0].data();
-        const email = userData.email;
+        const board = document.getElementById("noticeBoard");
+        const list = document.getElementById("noticeList");
 
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        return cred.user;
-      }
-
-      // ----------------------------
-      // ROLE‑BASED REDIRECT (AUTO‑CREATE ROLE IF MISSING)
-      // ----------------------------
-      async function handleRoleRedirect(user) {
-        const roleRef = doc(db, "roles", user.uid);
-        let roleSnap = await getDoc(roleRef);
-
-        if (!roleSnap.exists()) {
-          console.warn("Role missing — auto creating STUDENT role.");
-          await setDoc(roleRef, { role: "STUDENT" });
-          roleSnap = await getDoc(roleRef);
-        }
-
-        const role = roleSnap.data().role;
-
-        if (role === "ADMIN") window.location.href = "admin.html";
-        else if (role === "FACULTY") window.location.href = "faculty.html";
-        else if (role === "STUDENT") window.location.href = "student.html";
-        else showError("Invalid role: " + role);
-      }
-
-      // ----------------------------
-      // MUST-CHANGE-PASSWORD CHECK
-      // ----------------------------
-      async function handlePostLogin(user) {
-        try {
-          setLoading(true);
-
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-
-          // Fallback mode: if user profile missing → proceed with role redirect
-          if (!userSnap.exists()) {
-            console.warn("User profile missing in Firestore. Proceeding with role redirect.");
-            await handleRoleRedirect(user);
-            return;
-          }
-
-          const data = userSnap.data();
-          if (data.mustChangePassword === true) {
-            window.location.href = "change-password.html";
-            return;
-          }
-
-          await handleRoleRedirect(user);
-        } catch (err) {
-          console.error("Post-login handling error:", err);
-          console.warn("Profile load failed, falling back to role redirect.");
-          await handleRoleRedirect(user);
-        } finally {
-          setLoading(false);
-        }
-      }
-
-      // ----------------------------
-      // Email / Custom ID Login Button
-      // ----------------------------
-      document.getElementById("emailLogin").addEventListener("click", async () => {
-        const customId = document.getElementById("customId").value.trim();
-        const password = document.getElementById("password").value.trim();
-
-        if (!customId || !password) {
-          showError("Please enter User ID and Password.");
+        if (snap.empty) {
+          list.innerHTML = "<li>No notices available</li>";
+          board.classList.remove("hidden");
           return;
         }
 
-        try {
-          setLoading(true);
-          const user = await signInWithCustomId(customId, password);
-          await handlePostLogin(user);
-        } catch (err) {
-          console.error("Custom ID login error:", err);
-          showError(mapAuthErrorToMessage(err));
-        } finally {
-          setLoading(false);
-        }
-      });
+        list.innerHTML = "";
+        snap.forEach(d => list.innerHTML += `<li>${d.data().title}</li>`);
 
-      // ----------------------------
-      // GOOGLE SIGN-IN DOMAIN LOGIC (robust, handles empty domain config)
-      // ----------------------------
-      const provider = new GoogleAuthProvider();
+        board.classList.remove("hidden");
 
-      // CONFIG:
-      //   - Set to e.g. "kmit.in" to restrict to that domain.
-      //   - Leave as "" to allow ALL domains.
-      const ALLOWED_EMAIL_DOMAIN = "";
-
-      function isEmailAllowedForDomain(email) {
-        const allowed = (ALLOWED_EMAIL_DOMAIN || "").trim();
-
-        // No restriction configured → allow all
-        if (!allowed) return true;
-
-        if (!email || typeof email !== "string" || !email.includes("@")) {
-          return false;
-        }
-
-        const domain = email.split("@").pop().toLowerCase();
-        return domain === allowed.toLowerCase();
-      }
-
-      // Simple sanity tests for the domain helper (non-breaking)
-      (function testDomainHelper() {
-        try {
-          const cases = [
-            { email: "user@kmit.in", allowed: "", expected: true },
-            { email: "user@kmit.in", allowed: "kmit.in", expected: true },
-            { email: "user@gmail.com", allowed: "kmit.in", expected: false },
-            { email: "", allowed: "kmit.in", expected: false }
-          ];
-          cases.forEach((c, idx) => {
-            const result = ((email, allowedDomain) => {
-              const trimmed = (allowedDomain || "").trim();
-              if (!trimmed) return true;
-              if (!email || typeof email !== "string" || !email.includes("@")) return false;
-              const d = email.split("@").pop().toLowerCase();
-              return d === trimmed.toLowerCase();
-            })(c.email, c.allowed);
-            if (result !== c.expected) {
-              console.warn("Domain helper test failed", { idx, ...c, result });
-            }
-          });
-        } catch (e) {
-          console.warn("Domain helper tests error", e);
-        }
-      })();
-
-      // ----------------------------
-      // Google Sign-in (using domain + error mapper)
-      // ----------------------------
-      document.getElementById("googleSignIn").addEventListener("click", async () => {
-        try {
-          if (!auth) {
-            showError("Authentication is not initialized. Please refresh and try again.");
-            return;
-          }
-
-          setLoading(true);
-          const result = await signInWithPopup(auth, provider);
-          const user = result.user;
-          const email = user?.email || "";
-
-          if (!isEmailAllowedForDomain(email)) {
-            await signOut(auth);
-            const allowed = (ALLOWED_EMAIL_DOMAIN || "").trim();
-            showError(
-              allowed
-                ? `Only ${allowed.toLowerCase()} email IDs are allowed for Google Sign-In.`
-                : "Google Sign-In failed: Email is missing or invalid."
-            );
-            return;
-          }
-
-          await handlePostLogin(user);
-        } catch (err) {
-          console.error("Google Sign-In error:", err);
-          const msg = mapAuthErrorToMessage(err);
-          showError("Google Sign-In failed: " + msg);
-        } finally {
-          setLoading(false);
-        }
-      });
-
-      // ----------------------------
-      // NOTICE BOARD AUTO-FETCH
-      // ----------------------------
-      async function loadNotices() {
-        try {
-          const noticesRef = collection(db, "notices");
-          const q = query(noticesRef, where("active", "==", true));
-          const snap = await getDocs(q);
-
-          const board = document.getElementById("noticeBoard");
-          const list = document.getElementById("noticeList");
-
-          if (!board || !list) return;
-
-          if (snap.empty) {
-            list.innerHTML = "<li class='text-gray-500'>No notices available</li>";
-            board.classList.remove("hidden");
-            return;
-          }
-
-          list.innerHTML = "";
-          snap.forEach((docSnap) => {
-            const n = docSnap.data();
-            const li = document.createElement("li");
-            li.textContent = n.title ? `${n.title}` : (n.message || "Notice");
-            list.appendChild(li);
-          });
-
-          board.classList.remove("hidden");
-        } catch (err) {
-          console.error("Failed to load notices:", err);
-        }
-      }
-
-      loadNotices();
-
-      const closeNoticeBtn = document.getElementById("closeNotice");
-      if (closeNoticeBtn) {
-        closeNoticeBtn.addEventListener("click", () => {
-          const board = document.getElementById("noticeBoard");
-          if (board) board.classList.add("hidden");
-        });
+      } catch (err) {
+        console.error("Notice load error:", err);
       }
     }
+
+    loadNotices();
+
+    document.getElementById("closeNotice").addEventListener("click", () => {
+      document.getElementById("noticeBoard").classList.add("hidden");
+    });
   </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
