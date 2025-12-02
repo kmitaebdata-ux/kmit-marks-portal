@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KMIT Marks Portal – Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     .glass {
       backdrop-filter: blur(14px);
@@ -15,92 +14,108 @@
   </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 flex">
+<body class="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex text-gray-900">
 
-  <!-- LEFT SIDE IMAGE -->
+  <!-- LEFT SIDE IMAGE / BRAND -->
   <div class="hidden md:flex w-1/2 relative items-center justify-center">
     <img src="https://kmit.in/images/kmit-campus.jpg"
-         class="w-full h-full object-cover brightness-75" />
+         class="w-full h-full object-cover opacity-60" />
+    <div class="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/40 to-transparent"></div>
 
-    <div class="absolute inset-0 bg-black/40"></div>
-
-    <div class="absolute text-white px-6">
-      <h1 class="text-4xl font-extrabold mb-4 drop-shadow-lg">
+    <div class="absolute px-10">
+      <h1 class="text-4xl lg:text-5xl font-extrabold mb-4 text-white drop-shadow-xl">
         KMIT Marks Portal
       </h1>
-      <p class="text-lg opacity-90">
-        Secure access to Academic Results, Notices, and Examination Data.
+      <p class="text-lg text-indigo-100 max-w-md">
+        Single platform for Students, Faculty, and Exam Branch to manage marks, notices, and results.
       </p>
     </div>
   </div>
 
   <!-- RIGHT SIDE LOGIN PANEL -->
   <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
-
-    <div class="glass shadow-xl rounded-2xl p-8 w-full max-w-md">
-      <h2 class="text-3xl font-bold text-center mb-6 text-indigo-800">
-        Welcome Back
-      </h2>
-
-      <p class="text-center text-sm text-gray-600 mb-4">
-        Login using your KMIT User ID or Google Account.
-      </p>
+    <div class="glass shadow-2xl rounded-3xl p-8 w-full max-w-md text-white">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-3xl font-bold">Welcome Back</h2>
+          <p class="text-sm text-indigo-100 mt-1">
+            Login with your KMIT credentials to continue.
+          </p>
+        </div>
+        <div class="text-xs text-indigo-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+          Exam Branch • KMIT
+        </div>
+      </div>
 
       <!-- USER ID -->
+      <label class="block text-xs mb-1 text-indigo-100">User ID</label>
       <input id="customId"
-             class="w-full border border-gray-300 p-3 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-400"
-             type="text" placeholder="User ID (e.g., Hall Ticket)" />
+             class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-3
+                    focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm"
+             type="text"
+             placeholder="User ID (e.g., Hall Ticket)" />
 
       <!-- PASSWORD -->
+      <label class="block text-xs mb-1 text-indigo-100 mt-1">Password</label>
       <input id="password"
-             class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-indigo-400"
-             type="password" placeholder="Password" />
+             class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-4
+                    focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm"
+             type="password"
+             placeholder="Password" />
 
-      <!-- LOGIN -->
+      <!-- LOGIN BUTTON -->
       <button id="emailLogin"
-              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition">
+              class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-2xl
+                     font-semibold transition shadow-lg shadow-indigo-900/40 text-sm">
         Login
       </button>
 
-      <div class="text-center my-4 text-gray-500">or</div>
+      <div class="flex items-center my-4">
+        <div class="flex-1 h-px bg-white/20"></div>
+        <span class="px-3 text-xs text-indigo-100">or</span>
+        <div class="flex-1 h-px bg-white/20"></div>
+      </div>
 
       <!-- GOOGLE LOGIN -->
       <button id="googleSignIn"
-              class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium shadow hover:shadow-md transition flex items-center justify-center gap-2">
+              class="w-full bg-white text-gray-800 py-3 rounded-2xl font-medium shadow-md
+                     hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
              class="w-5 h-5" />
         Sign in with Google
       </button>
 
       <p id="errorBox"
-         class="text-red-600 text-center mt-3 hidden text-sm"></p>
+         class="text-red-300 text-center mt-3 hidden text-xs"></p>
+
+      <p class="mt-5 text-[11px] text-indigo-100/80 text-center">
+        Having trouble logging in? Contact Exam Branch.
+      </p>
     </div>
   </div>
 
   <!-- NOTICE BOARD (Right Bottom) -->
   <div id="noticeBoard"
-       class="fixed bottom-6 right-6 bg-white shadow-2xl rounded-xl p-5 w-80 hidden z-30 border border-gray-200">
+       class="fixed bottom-6 right-6 bg-slate-900/90 shadow-2xl rounded-2xl p-5 w-80 hidden z-30 border border-white/20 text-white">
     <div class="flex items-center justify-between mb-3">
-      <h3 class="font-bold text-sm text-indigo-700">Latest Notices</h3>
+      <h3 class="font-bold text-sm text-indigo-200">Latest Notices</h3>
       <button id="closeNotice"
-              class="text-xs text-gray-500 hover:text-gray-800">✕</button>
+              class="text-xs text-indigo-200 hover:text-white">✕</button>
     </div>
     <ul id="noticeList"
-        class="list-disc pl-4 text-xs space-y-1 max-h-40 overflow-y-auto text-gray-700"></ul>
+        class="list-disc pl-4 text-xs space-y-1 max-h-40 overflow-y-auto text-indigo-100"></ul>
   </div>
 
   <!-- LOADING OVERLAY -->
   <div id="loader"
-       class="fixed inset-0 bg-black/20 flex items-center justify-center hidden z-40">
-    <div class="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+       class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-40">
+    <div class="h-12 w-12 border-4 border-indigo-200 border-t-transparent rounded-full animate-spin"></div>
   </div>
 
-
-  <!-- YOUR EXISTING LOGIN SCRIPT (UNCHANGED) -->
+  <!-- Your existing Firebase v10 login script -->
   <script type="module">
-    /* Your same Firebase JS code goes here. */
-    /* EXACTLY what you already pasted earlier */
+    // paste your existing index.html <script type="module"> code here unchanged
+    // (Firebase config, signInWithCustomId, handlePostLogin, loadNotices, etc.)
   </script>
-
 </body>
 </html>
