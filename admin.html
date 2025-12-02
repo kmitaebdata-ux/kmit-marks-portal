@@ -1,39 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KMIT Admin Panel</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KMIT Marks Portal – Admin Dashboard</title>
+
+  <!-- Tailwind CDN (ok for now; later you can build locally) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    section {
+      transition: opacity 0.3s ease;
+    }
+  </style>
 </head>
-<body class="bg-gray-100">
-  <div class="flex min-h-screen">
-    <aside class="w-64 bg-gray-900 text-white p-4">
-      <h2 class="text-xl font-bold mb-6">KMIT Admin Panel</h2>
-      <nav class="space-y-2">
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="overview">Overview</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="marks">Marks Management</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="users">User & Role Management</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="roles">Role Manager</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="directory">Users Directory</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="bulk">Bulk Role Upload</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="reports">Reports</button>
-        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="logs">System Logs</button>
-      </nav>
-      <button id="logoutBtn" class="mt-6 w-full bg-red-600 py-2 rounded hover:bg-red-700">Sign Out</button>
-    </aside>
+<body class="min-h-screen bg-gray-100 flex">
 
-    <main class="flex-1 p-6">
-      <h1 class="text-2xl font-bold mb-4" id="pageTitle">Dashboard</h1>
-      <div id="contentArea" class="bg-white p-4 rounded shadow">Select an item from the menu</div>
-    </main>
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-slate-900 text-gray-100 flex flex-col">
+    <div class="p-4 border-b border-slate-700">
+      <h1 class="text-xl font-bold">KMIT Admin Panel</h1>
+      <p class="text-xs text-slate-300 mt-1">Marks & Users Management</p>
+    </div>
 
-    <aside class="w-96 bg-white shadow-lg p-4 border-l">
-      <h3 class="text-lg font-bold mb-2">📢 Notices</h3>
-      <div id="noticeBoard" class="max-h-[80vh] overflow-y-auto text-sm"></div>
-    </aside>
-  </div>
+    <nav class="flex-1 overflow-y-auto text-sm">
+      <ul class="py-2 space-y-1">
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center gap-2"
+                  data-page="overview">
+            <span>📊 Overview</span>
+          </button>
+        </li>
+        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Master Data</li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="students">👨‍🎓 Students</button>
+        </li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="faculty">👨‍🏫 Faculty</button>
+        </li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="subjects">📚 Subjects</button>
+        </li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="assignments">🧩 Faculty–Subject Map</button>
+        </li>
 
+        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Marks & Notices</li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="marks">📝 Marks Management</button>
+        </li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="notices">📢 Notices</button>
+        </li>
+
+        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Security</li>
+        <li>
+          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
+                  data-page="roles">🔐 Roles</button>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="p-4 border-t border-slate-700 flex items-center justify-between">
+      <div class="text-xs">
+        <div id="adminEmail" class="font-medium truncate"></div>
+        <div class="text-slate-400" id="adminRole">Role: -</div>
+      </div>
+      <button id="logoutBtn"
+              class="text-xs px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white">
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- TOP BAR -->
+    <header class="h-14 bg-white border-b flex items-center justify-between px-4">
+      <div>
+        <h2 id="pageTitle" class="text-lg font-semibold">Overview</h2>
+        <p class="text-xs text-gray-500">KMIT Marks Portal – Admin Dashboard</p>
+      </div>
+      <div id="topNotice" class="text-xs text-red-600 font-semibold"></div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <section id="contentArea" class="flex-1 p-4 overflow-y-auto text-sm">
+      <!-- Filled by admin.js -->
+      <div class="text-gray-500">Loading...</div>
+    </section>
+
+    <!-- FOOTER NOTICE BOARD -->
+    <footer class="h-16 bg-slate-900 text-gray-100 text-xs flex items-center px-4">
+      <div class="font-semibold mr-3">Notice Board:</div>
+      <div id="noticeBoard" class="flex-1 overflow-x-auto whitespace-nowrap"></div>
+    </footer>
+
+  </main>
+
+  <!-- Firebase v8 compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- Your admin logic -->
   <script src="admin.js"></script>
 </body>
 </html>
