@@ -1,72 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KMIT Admin Panel</title>
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Blinking Notice CSS -->
-    <style>
-        .blink-red {
-            animation: blinkRed 0.9s infinite;
-        }
-
-        @keyframes blinkRed {
-            50% {
-                color: red;
-            }
-            100% {
-                color: white;
-            }
-        }
-
-        .blink-blue {
-            animation: blinkBlue 1.2s infinite;
-        }
-
-        @keyframes blinkBlue {
-            50% {
-                color: blue;
-            }
-            100% {
-                color: white;
-            }
-        }
-
-        /* Auto-scrolling notice container */
-        #noticeScroller {
-            height: 420px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KMIT Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body class="bg-gray-100">
+  <div class="flex min-h-screen">
+    <aside class="w-64 bg-gray-900 text-white p-4">
+      <h2 class="text-xl font-bold mb-6">KMIT Admin Panel</h2>
+      <nav class="space-y-2">
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="overview">Overview</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="marks">Marks Management</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="users">User & Role Management</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="roles">Role Manager</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="directory">Users Directory</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="bulk">Bulk Role Upload</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="reports">Reports</button>
+        <button class="nav-link w-full text-left px-3 py-2 hover:bg-gray-700 rounded" data-page="logs">System Logs</button>
+      </nav>
+      <button id="logoutBtn" class="mt-6 w-full bg-red-600 py-2 rounded hover:bg-red-700">Sign Out</button>
+    </aside>
 
-    <!-- PAGE LAYOUT -->
-    <div class="flex">
+    <main class="flex-1 p-6">
+      <h1 class="text-2xl font-bold mb-4" id="pageTitle">Dashboard</h1>
+      <div id="contentArea" class="bg-white p-4 rounded shadow">Select an item from the menu</div>
+    </main>
 
-        <!-- LEFT SIDEBAR -->
-        <aside class="w-64 bg-gray-900 text-white min-h-screen p-4">
-            <h2 class="text-xl font-bold mb-6">KMIT Admin Panel</h2>
+    <aside class="w-96 bg-white shadow-lg p-4 border-l">
+      <h3 class="text-lg font-bold mb-2">📢 Notices</h3>
+      <div id="noticeBoard" class="max-h-[80vh] overflow-y-auto text-sm"></div>
+    </aside>
+  </div>
 
-            <nav class="space-y-2">
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Overview</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Marks Management</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">User & Role Management</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Role Manager</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Users Directory</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Bulk Role Upload</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">Reports</a>
-                <a href="#" class="block px-3 py-2 hover:bg-gray-700 rounded">System Logs</a>
-            </nav>
-
-            <div class="mt-10 text-center text-gray-300 text-sm">Loading...</div>
-
-            <button id="logoutBtn"
-                class="mt-4 w-full bg-red-600 py-2 rounded hover:bg-red-700">
+  <script src="admin.js"></script>
+</body>
+</html>
