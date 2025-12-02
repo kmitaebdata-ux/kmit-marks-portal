@@ -3,10 +3,13 @@ console.log("Admin panel JS loaded");
 
 // TODO: PUT YOUR REAL CONFIG HERE
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  // storageBucket, messagingSenderId, appId optional here
+  apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
+  authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
+  projectId: "kmit-marks-portal-9db76",
+  storageBucket: "kmit-marks-portal-9db76.firebasestorage.app",
+  messagingSenderId: "264909025742",
+  appId: "1:264909025742:web:84de5216860219e6bc3b9f",
+  measurementId: "G-JMZ564P8PJ"
 };
 
 if (!firebase.apps.length) {
