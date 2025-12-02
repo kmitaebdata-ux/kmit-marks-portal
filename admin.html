@@ -5,104 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KMIT Marks Portal – Admin Dashboard</title>
 
-  <!-- Tailwind CDN (ok for now; later you can build locally) -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    section {
-      transition: opacity 0.3s ease;
+    .glass {
+      backdrop-filter: blur(18px);
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.5);
     }
   </style>
 </head>
-<body class="min-h-screen bg-gray-100 flex">
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex text-slate-100">
 
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-slate-900 text-gray-100 flex flex-col">
-    <div class="p-4 border-b border-slate-700">
-      <h1 class="text-xl font-bold">KMIT Admin Panel</h1>
-      <p class="text-xs text-slate-300 mt-1">Marks & Users Management</p>
+  <aside class="hidden lg:flex w-64 flex-col p-4 gap-4">
+    <div class="glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+      <div class="h-10 w-10 rounded-xl bg-indigo-500 flex items-center justify-center text-xl">
+        🔐
+      </div>
+      <div class="text-xs">
+        <div class="font-semibold text-sm">KMIT Admin Panel</div>
+        <div class="text-slate-300">Marks & Users Management</div>
+      </div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto text-sm">
-      <ul class="py-2 space-y-1">
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800 flex items-center gap-2"
-                  data-page="overview">
-            <span>📊 Overview</span>
-          </button>
-        </li>
-        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Master Data</li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="students">👨‍🎓 Students</button>
-        </li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="faculty">👨‍🏫 Faculty</button>
-        </li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="subjects">📚 Subjects</button>
-        </li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="assignments">🧩 Faculty–Subject Map</button>
-        </li>
+    <nav class="glass rounded-2xl flex-1 p-3 text-sm shadow-lg">
+      <div class="text-[11px] uppercase tracking-wide text-slate-400 px-2 mb-2">Dashboard</div>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="overview">
+        <span>📊</span><span>Overview</span>
+      </button>
 
-        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Marks & Notices</li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="marks">📝 Marks Management</button>
-        </li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="notices">📢 Notices</button>
-        </li>
+      <div class="text-[11px] uppercase tracking-wide text-slate-400 px-2 mt-4 mb-1">Master Data</div>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="students">👨‍🎓 Students</button>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="faculty">👨‍🏫 Faculty</button>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="subjects">📚 Subjects</button>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="assignments">🧩 Faculty–Subject Map</button>
 
-        <li class="px-4 pt-2 text-[11px] uppercase tracking-wide text-slate-400">Security</li>
-        <li>
-          <button class="nav-link w-full text-left px-4 py-2 hover:bg-slate-800"
-                  data-page="roles">🔐 Roles</button>
-        </li>
-      </ul>
+      <div class="text-[11px] uppercase tracking-wide text-slate-400 px-2 mt-4 mb-1">Marks & Notices</div>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="marks">📝 Marks Management</button>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2 mb-1"
+              data-page="notices">📢 Notices</button>
+
+      <div class="text-[11px] uppercase tracking-wide text-slate-400 px-2 mt-4 mb-1">Security</div>
+      <button class="nav-link w-full text-left px-3 py-2 rounded-xl hover:bg-indigo-600/40 flex items-center gap-2"
+              data-page="roles">🔐 Roles</button>
     </nav>
 
-    <div class="p-4 border-t border-slate-700 flex items-center justify-between">
-      <div class="text-xs">
-        <div id="adminEmail" class="font-medium truncate"></div>
-        <div class="text-slate-400" id="adminRole">Role: -</div>
+    <div class="glass rounded-2xl p-3 flex items-center justify-between text-xs shadow-lg">
+      <div>
+        <div id="adminEmail" class="font-semibold truncate max-w-[130px]"></div>
+        <div id="adminRole" class="text-slate-300 text-[11px]">Role: Loading...</div>
       </div>
       <button id="logoutBtn"
-              class="text-xs px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white">
+              class="text-[11px] px-3 py-1 rounded-full bg-red-500 hover:bg-red-600 text-white">
         Logout
       </button>
     </div>
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col">
+  <main class="flex-1 flex flex-col p-3 md:p-5 gap-3">
 
     <!-- TOP BAR -->
-    <header class="h-14 bg-white border-b flex items-center justify-between px-4">
+    <header class="glass rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg">
       <div>
-        <h2 id="pageTitle" class="text-lg font-semibold">Overview</h2>
-        <p class="text-xs text-gray-500">KMIT Marks Portal – Admin Dashboard</p>
+        <h2 id="pageTitle" class="text-lg md:text-xl font-semibold">Overview</h2>
+        <p class="text-[11px] md:text-xs text-slate-300">
+          KMIT Marks Portal – Admin Dashboard
+        </p>
       </div>
-      <div id="topNotice" class="text-xs text-red-600 font-semibold"></div>
+      <div id="topNotice" class="text-[11px] text-red-300 font-semibold text-right"></div>
     </header>
 
     <!-- CONTENT AREA -->
-    <section id="contentArea" class="flex-1 p-4 overflow-y-auto text-sm">
-      <!-- Filled by admin.js -->
-      <div class="text-gray-500">Loading...</div>
+    <section id="contentArea"
+             class="glass rounded-2xl flex-1 p-4 md:p-5 overflow-y-auto text-sm shadow-xl">
+      <div class="text-slate-300">Loading admin dashboard...</div>
     </section>
 
-    <!-- FOOTER NOTICE BOARD -->
-    <footer class="h-16 bg-slate-900 text-gray-100 text-xs flex items-center px-4">
-      <div class="font-semibold mr-3">Notice Board:</div>
-      <div id="noticeBoard" class="flex-1 overflow-x-auto whitespace-nowrap"></div>
+    <!-- FOOTER NOTICE TICKER -->
+    <footer class="glass rounded-2xl h-14 mt-2 px-4 flex items-center text-xs shadow-lg">
+      <div class="font-semibold mr-3 text-indigo-200">Notice Board</div>
+      <div id="noticeBoard" class="flex-1 overflow-x-auto whitespace-nowrap text-slate-200 text-[11px]"></div>
     </footer>
-
   </main>
 
   <!-- Firebase v8 compat CDN -->
@@ -110,7 +100,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Your admin logic -->
+  <!-- Your existing admin.js (the cleaned one we wrote) -->
   <script src="admin.js"></script>
 </body>
 </html>
