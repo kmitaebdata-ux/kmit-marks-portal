@@ -7,42 +7,45 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* -----------------------------------------
-       GLASS UTILITY
-    ------------------------------------------ */
     .glass {
       backdrop-filter: blur(14px);
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.25);
     }
 
-    /* -----------------------------------------
-       SLIDING HEADLINE ANIMATION
-    ------------------------------------------ */
+    body {
+      animation: fadePage 0.6s ease;
+    }
+
+    @keyframes fadePage {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     @keyframes slideIn {
       0% { opacity: 0; transform: translateY(30px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-
     .headline-animate {
       animation: slideIn 1.2s ease forwards;
     }
 
-    /* ------------------------------------------
-       AUTO-SCROLL NOTICE LIST
-    ------------------------------------------- */
+    @keyframes scrollNotices {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-100%); }
+    }
     .autoscroll {
       animation: scrollNotices 12s linear infinite;
     }
 
-    @keyframes scrollNotices {
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(-100%); }
+    @keyframes noticeSlide {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .notice-animate {
+      animation: noticeSlide 0.9s ease-out forwards;
     }
 
-    /* ------------------------------------------
-       MOBILE FIX: prevent zoom text/input changes
-    ------------------------------------------- */
     input, button {
       font-size: 16px !important;
     }
@@ -51,64 +54,47 @@
 
 <body class="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex text-gray-900">
 
-  <!-- LEFT SIDE -->
+  <!-- LEFT PANEL -->
   <div class="hidden md:flex w-1/2 relative items-center justify-center">
-
-    <img src="https://kmit.in/images/kmit-campus.jpg"
-         class="w-full h-full object-cover opacity-60" />
-
+    <img src="https://kmit.in/images/kmit-campus.jpg" class="w-full h-full object-cover opacity-60" />
     <div class="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/40 to-transparent"></div>
 
-    <!-- SLIDING HEADLINE -->
-    <div class="absolute px-10 headline-animate">
-      <h1 class="text-4xl lg:text-5xl font-extrabold mb-4 text-white drop-shadow-xl">
-        KMIT Marks Portal
-      </h1>
-      <p class="text-lg text-indigo-100 max-w-md">
-        Single platform for Students, Faculty, and Exam Branch to manage marks, notices, and results.
-      </p>
+    <div class="absolute top-10 left-0 w-full text-center px-10 headline-animate">
+      <h1 class="text-4xl lg:text-5xl font-extrabold mb-4 text-white drop-shadow-xl w-full">KMIT Marks Portal</h1>
+      <p class="text-lg text-indigo-100 w-full">Single platform for Students, Faculty, and Exam Branch to manage marks, notices, and results.</p>
     </div>
 
+    <!-- NOTICE BOARD -->
+    <div class="absolute top-[35%] left-0 w-full flex justify-start ml-10 -translate-y-1/2">
+      <div id="noticeBoard" class="bg-indigo-900/60 backdrop-blur-xl shadow-2xl rounded-xl w-[28rem] z-30 border border-indigo-300/40 text-white notice-animate">
+        <div class="bg-indigo-600/70 border-b border-indigo-300/40 rounded-t-xl px-4 py-2 text-center">
+          <h3 class="font-bold text-sm tracking-wide text-white">NOTICE BOARD</h3>
+        </div>
+        <div class="max-h-48 overflow-hidden p-4 relative">
+          <ul id="noticeList" class="text-xs text-indigo-100 space-y-2 autoscroll"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT SIDE LOGIN -->
+  <!-- RIGHT PANEL -->
   <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
-    <div class="glass shadow-2xl rounded-3xl p-8 w-full max-w-md text-white animate__animated animate__fadeIn">
-
+    <div class="glass shadow-2xl rounded-3xl p-8 w-full max-w-md text-white">
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-3xl font-bold">Welcome Back</h2>
-          <p class="text-sm text-indigo-100 mt-1">
-            Login with your KMIT credentials to continue.
-          </p>
+          <p class="text-sm text-indigo-100 mt-1">Login with your KMIT credentials to continue.</p>
         </div>
-        <div class="text-xs text-indigo-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">
-          Exam Branch • KMIT
-        </div>
+        <div class="text-xs text-indigo-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">Exam Branch • KMIT</div>
       </div>
 
-      <!-- USER ID -->
       <label class="block text-xs mb-1 text-indigo-100">User ID</label>
-      <input id="customId"
-             class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-3
-                    focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm"
-             type="text"
-             placeholder="User ID (e.g., Hall Ticket)" />
+      <input id="customId" class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm" type="text" placeholder="User ID (e.g., Hall Ticket)" />
 
-      <!-- PASSWORD -->
       <label class="block text-xs mb-1 text-indigo-100 mt-1">Password</label>
-      <input id="password"
-             class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-4
-                    focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm"
-             type="password"
-             placeholder="Password" />
+      <input id="password" class="w-full bg-white/10 border border-white/30 p-3 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-indigo-200 text-sm" type="password" placeholder="Password" />
 
-      <!-- LOGIN BUTTON -->
-      <button id="emailLogin"
-              class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-2xl
-                     font-semibold transition shadow-lg shadow-indigo-900/40 text-sm">
-        Login
-      </button>
+      <button id="emailLogin" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-2xl font-semibold transition shadow-lg shadow-indigo-900/40 text-sm">Login</button>
 
       <div class="flex items-center my-4">
         <div class="flex-1 h-px bg-white/20"></div>
@@ -116,49 +102,23 @@
         <div class="flex-1 h-px bg-white/20"></div>
       </div>
 
-      <!-- GOOGLE SIGN-IN -->
-      <button id="googleSignIn"
-              class="w-full bg-white text-gray-800 py-3 rounded-2xl font-medium shadow-md
-                     hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-             class="w-5 h-5" />
-        Sign in with Google
+      <button id="googleSignIn" class="w-full bg-white text-gray-800 py-3 rounded-2xl font-medium shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" /> Sign in with Google
       </button>
 
-      <p id="errorBox"
-         class="text-red-300 text-center mt-3 hidden text-xs"></p>
+      <p id="errorBox" class="text-red-300 text-center mt-3 hidden text-xs"></p>
 
-      <p class="mt-5 text-[11px] text-indigo-100/80 text-center">
-        Having trouble logging in? Contact Exam Branch.
-      </p>
-    </div>
-  </div>
-
-  <!-- 🔔 NOTICE BOARD — GLASS + AUTO SCROLL -->
-  <div id="noticeBoard"
-       class="fixed bottom-6 right-6 bg-slate-900/80 backdrop-blur-xl shadow-2xl rounded-2xl p-5 w-80 hidden z-30 border border-white/10 text-white">
-
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="font-bold text-sm text-indigo-200">Latest Notices</h3>
-      <button id="closeNotice" class="text-xs text-indigo-200 hover:text-white">✕</button>
-    </div>
-
-    <div class="max-h-40 overflow-hidden relative">
-      <ul id="noticeList" class="text-xs text-indigo-100 space-y-2 autoscroll"></ul>
+      <p class="mt-5 text-[11px] text-indigo-100/80 text-center">Having trouble logging in? Contact Exam Branch.</p>
     </div>
   </div>
 
   <!-- LOADER -->
-  <div id="loader"
-       class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-40">
+  <div id="loader" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-40">
     <div class="h-12 w-12 border-4 border-indigo-200 border-t-transparent rounded-full animate-spin"></div>
   </div>
 
-  <!-- FIREBASE AUTH + NOTICES -->
+  <!-- FIREBASE SCRIPT -->
   <script type="module">
-    /* =====================================================
-       FIREBASE IMPORTS
-    ===================================================== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getAuth,
@@ -177,9 +137,9 @@
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    /* =====================================================
-       FIREBASE CONFIG
-    ===================================================== */
+    // -------------------------------------------------
+    // Firebase Config & Init
+    // -------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
       authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
@@ -194,124 +154,219 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    /* =====================================================
-       HELPERS
-    ===================================================== */
-    const showError = (msg) => {
+    // -------------------------------------------------
+    // UI Helpers
+    // -------------------------------------------------
+    function showError(msg) {
       const box = document.getElementById("errorBox");
+      if (!box) return;
       box.textContent = msg;
       box.classList.remove("hidden");
-    };
+    }
 
-    const setLoading = (state) => {
-      document.getElementById("loader").classList.toggle("hidden", !state);
-    };
+    function setLoading(state) {
+      const loader = document.getElementById("loader");
+      if (!loader) return;
+      loader.classList.toggle("hidden", !state);
+    }
 
-    /* =====================================================
-       CUSTOM USER-ID LOGIN
-    ===================================================== */
+    // -------------------------------------------------
+    // Custom ID Login (UserID + Password)
+    // users collection: { customUserId, email, ... }
+    // -------------------------------------------------
     async function signInWithCustomId(customId, password) {
       const usersRef = collection(db, "users");
-      const q = query(usersRef, where("customUserId", "==", customId));
-      const snap = await getDocs(q);
+      const qUsers = query(usersRef, where("customUserId", "==", customId));
+      const snap = await getDocs(qUsers);
 
-      if (snap.empty) throw new Error("Invalid User ID or Password.");
+      if (snap.empty) {
+        throw new Error("Invalid User ID or Password.");
+      }
 
       const email = snap.docs[0].data().email;
+      if (!email) {
+        throw new Error("No email mapped for this User ID.");
+      }
+
       return signInWithEmailAndPassword(auth, email, password);
     }
 
+    // -------------------------------------------------
+    // Role-based Redirect
+    // roles collection: { role: "ADMIN" | "FACULTY" | "STUDENT" }
+    // -------------------------------------------------
     async function redirectByRole(user) {
-      const rRef = doc(db, "roles", user.uid);
-      let rSnap = await getDoc(rRef);
+      const roleRef = doc(db, "roles", user.uid);
+      let roleSnap = await getDoc(roleRef);
 
-      if (!rSnap.exists()) {
-        await setDoc(rRef, { role: "STUDENT" });
-        rSnap = await getDoc(rRef);
+      // Auto-create default STUDENT role if not found
+      if (!roleSnap.exists()) {
+        await setDoc(roleRef, { role: "STUDENT" });
+        roleSnap = await getDoc(roleRef);
       }
 
-      const role = rSnap.data().role;
+      const data = roleSnap.data();
+      const role = data?.role || "STUDENT";
 
-      if (role === "ADMIN") location.href = "admin.html";
-      else if (role === "FACULTY") location.href = "faculty.html";
-      else location.href = "student.html";
-    }
-
-    async function postLogin(user) {
-      const uRef = doc(db, "users", user.uid);
-      const uSnap = await getDoc(uRef);
-
-      if (uSnap.exists() && uSnap.data().mustChangePassword) {
-        location.href = "change-password.html";
+      if (role === "ADMIN") {
+        window.location.href = "admin.html";
+      } else if (role === "FACULTY") {
+        window.location.href = "faculty.html";
       } else {
-        redirectByRole(user);
+        window.location.href = "student.html";
       }
     }
 
-    /* EMAIL LOGIN */
-    document.getElementById("emailLogin").addEventListener("click", async () => {
-      const uid = customId.value.trim();
-      const pw = password.value.trim();
-      if (!uid || !pw) return showError("Enter User ID & Password.");
-
+    // -------------------------------------------------
+    // Post-login Handler (mustChangePassword support)
+    // users collection: { mustChangePassword: true/false }
+    // -------------------------------------------------
+    async function handlePostLogin(user) {
       try {
-        setLoading(true);
-        const cred = await signInWithCustomId(uid, pw);
-        await postLogin(cred.user);
-      } catch (err) {
-        showError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    });
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-    /* GOOGLE LOGIN */
-    document.getElementById("googleSignIn").addEventListener("click", async () => {
-      try {
-        setLoading(true);
-        const result = await signInWithPopup(auth, provider);
-        await postLogin(result.user);
-      } catch (err) {
-        showError("Google Sign-In failed.");
-      } finally {
-        setLoading(false);
-      }
-    });
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.mustChangePassword === true) {
+            window.location.href = "change-password.html";
+            return;
+          }
+        }
 
-    /* =====================================================
-       NOTICE BOARD LOADER (AUTO SCROLL)
-    ===================================================== */
+        await redirectByRole(user);
+      } catch (err) {
+        console.error("Post login error", err);
+        // Fallback: still try redirect by role
+        await redirectByRole(user);
+      }
+    }
+
+    // -------------------------------------------------
+    // Notice Board Loader
+    // notices collection: { title, active, createdAt, ... }
+    // -------------------------------------------------
     async function loadNotices() {
       try {
-        const ref = collection(db, "notices");
-        const qN = query(ref, where("active", "==", true));
-        const snap = await getDocs(qN);
-
         const board = document.getElementById("noticeBoard");
         const list = document.getElementById("noticeList");
+        if (!board || !list) return;
+
+        const noticesRef = collection(db, "notices");
+        const qNotices = query(noticesRef, where("active", "==", true));
+        const snap = await getDocs(qNotices);
+
+        list.innerHTML = "";
 
         if (snap.empty) {
           list.innerHTML = "<li>No notices available</li>";
           board.classList.remove("hidden");
+          list.classList.remove("autoscroll");
           return;
         }
 
-        list.innerHTML = "";
-        snap.forEach(docSnap => {
-          list.innerHTML += `<li>${docSnap.data().title}</li>`;
+        const docs = [];
+        snap.forEach((docSnap) => {
+          docs.push(docSnap.data());
         });
+
+        docs
+          .sort((a, b) => {
+            const ta = a.createdAt?.seconds || 0;
+            const tb = b.createdAt?.seconds || 0;
+            return tb - ta;
+          })
+          .forEach((n) => {
+            const text = n.title || n.message || "Notice";
+            list.innerHTML += `<li>${text}</li>`;
+          });
 
         board.classList.remove("hidden");
 
-      } catch (e) {
-        console.log(e);
+        // Enable autoscroll only if there are many notices
+        if (docs.length > 3) {
+          list.classList.add("autoscroll");
+        } else {
+          list.classList.remove("autoscroll");
+        }
+
+        // Pause autoscroll on hover
+        list.addEventListener("mouseenter", () => {
+          list.classList.remove("autoscroll");
+        });
+        list.addEventListener("mouseleave", () => {
+          if (docs.length > 3) {
+            list.classList.add("autoscroll");
+          }
+        });
+      } catch (err) {
+        console.error("Notice load error", err);
+        // Show a friendly message instead of just throwing/logging
+        const board = document.getElementById("noticeBoard");
+        const list = document.getElementById("noticeList");
+        if (board && list) {
+          list.innerHTML = "<li>Unable to load notices. Please try again later.</li>";
+          board.classList.remove("hidden");
+          list.classList.remove("autoscroll");
+        }
       }
     }
 
-    loadNotices();
-    document.getElementById("closeNotice").addEventListener("click", () => {
-      noticeBoard.classList.add("hidden");
+    // -------------------------------------------------
+    // Event Listeners (Login + Google + Init)
+    // -------------------------------------------------
+    window.addEventListener("DOMContentLoaded", () => {
+      const emailLoginBtn = document.getElementById("emailLogin");
+      const googleBtn = document.getElementById("googleSignIn");
+      const customIdInput = document.getElementById("customId");
+      const passwordInput = document.getElementById("password");
+
+      // Simple DOM "test cases" to catch missing elements early
+      console.assert(document.getElementById("noticeBoard"), "Test: noticeBoard element should exist");
+      console.assert(document.getElementById("noticeList"), "Test: noticeList element should exist");
+
+      if (emailLoginBtn && customIdInput && passwordInput) {
+        emailLoginBtn.addEventListener("click", async () => {
+          const uid = customIdInput.value.trim();
+          const pw = passwordInput.value.trim();
+
+          if (!uid || !pw) {
+            showError("Enter User ID & Password.");
+            return;
+          }
+
+          try {
+            setLoading(true);
+            const cred = await signInWithCustomId(uid, pw);
+            await handlePostLogin(cred.user);
+          } catch (err) {
+            console.error("Custom login error", err);
+            showError(err.message || "Login failed.");
+          } finally {
+            setLoading(false);
+          }
+        });
+      }
+
+      if (googleBtn) {
+        googleBtn.addEventListener("click", async () => {
+          try {
+            setLoading(true);
+            const result = await signInWithPopup(auth, provider);
+            await handlePostLogin(result.user);
+          } catch (err) {
+            console.error("Google Sign-In Error", err);
+            showError("Google Sign-In failed. Please try again.");
+          } finally {
+            setLoading(false);
+          }
+        });
+      }
+
+      // Load notices on start
+      loadNotices();
     });
   </script>
+
 </body>
 </html>
