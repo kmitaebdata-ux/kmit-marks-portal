@@ -1,12 +1,12 @@
 // ================== ADMIN.JS (Firebase v9 compat) ==================
-console.log("Admin panel JS loaded");
+console.log("Admin panel JS loaded – full build with System Maintenance");
 
 // ---------- FIREBASE INIT ----------
 const firebaseConfig = {
   apiKey: "AIzaSyC1Aa_mnq_0g7ZEuLbYVjN62iCMWemlKUc",
   authDomain: "kmit-marks-portal-9db76.firebaseapp.com",
   projectId: "kmit-marks-portal-9db76",
-  storageBucket: "kmit-marks-portal-9db76.firebasestorage.app",
+  storageBucket: "kmit-marks-portal-9db76.appspot.com", // fixed
   messagingSenderId: "264909025742",
   appId: "1:264909025742:web:84de5216860219e6bc3b9f",
 };
@@ -16,7 +16,9 @@ if (!firebase.apps.length) {
 }
 
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
+// Cloud Functions (asia-south1)
+const functions = firebase.app().functions("asia-south1");
 
 // ---------- DOM REFERENCES ----------
 const navLinks    = document.querySelectorAll('.nav-link');
@@ -27,6 +29,11 @@ const noticeBoard = document.getElementById('noticeBoard');
 const topNotice   = document.getElementById('topNotice');
 const adminEmail  = document.getElementById('adminEmail');
 const adminRoleEl = document.getElementById('adminRole');
+
+// Maintenance modal elements
+const purgeModal      = document.getElementById('purgeModal');
+const cancelPurgeBtn  = document.getElementById('cancelPurgeBtn');
+const confirmPurgeBtn = document.getElementById('confirmPurgeBtn');
 
 // ======================================================
 // AUTH GUARD + ROLE CHECK
@@ -115,6 +122,7 @@ async function loadPage(page) {
       case "marks":         renderMarksPage();           break;
       case "roles":         renderRolesPage();           break;
       case "notices":       renderNoticesPage();         break;
+      case "maintenance":   await renderMaintenancePage(); break;
       default:
         contentArea.innerHTML = `<div class="text-red-400">Unknown page: ${page}</div>`;
     }
@@ -135,77 +143,36 @@ function formatTitle(page) {
 }
 
 // ======================================================
-// OVERVIEW PAGE
+// FOOTER NOTICE TICKER
 // ======================================================
-async function renderOverview() {
-  const html = `
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-      <div class="panel-card">
-        <div class="text-[11px] text-slate-300">Total Students</div>
-        <div id="ovStudents" class="text-2xl font-bold mt-1">–</div>
-      </div>
-      <div class="panel-card">
-        <div class="text-[11px] text-slate-300">Total Faculty</div>
-        <div id="ovFaculty" class="text-2xl font-bold mt-1">–</div>
-      </div>
-      <div class="panel-card">
-        <div class="text-[11px] text-slate-300">Subjects Offered</div>
-        <div id="ovSubjects" class="text-2xl font-bold mt-1">–</div>
-      </div>
-    </div>
+async function loadNoticeTicker() {
+  noticeBoard.innerHTML = "Loading notices...";
+  const snap = await db.collection("notices")
+    .where("active", "==", true)
+    .orderBy("createdAt", "desc")
+    .limit(5)
+    .get();
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="panel-card">
-        <div class="text-sm font-semibold mb-2">Marks Summary</div>
-        <div id="ovMarks" class="text-slate-300 text-sm">Loading...</div>
-      </div>
-      <div class="panel-card">
-        <div class="text-sm font-semibold mb-2">Latest Notices</div>
-        <ul id="ovNotices" class="text-xs text-slate-300 space-y-1"></ul>
-      </div>
-    </div>
-  `;
-
-  contentArea.innerHTML = html;
-
-  const [studSnap, facSnap, subSnap, marksSnap, noticesSnap] = await Promise.all([
-    db.collection("students").get(),
-    db.collection("faculty").get(),
-    db.collection("subjects").get(),
-    db.collection("marks").limit(5).get(),
-    db.collection("notices").orderBy("createdAt", "desc").limit(5).get()
-  ]);
-
-  document.getElementById("ovStudents").textContent = studSnap.size;
-  document.getElementById("ovFaculty").textContent  = facSnap.size;
-  document.getElementById("ovSubjects").textContent = subSnap.size;
-
-  const ovMarks = document.getElementById("ovMarks");
-  if (marksSnap.empty) {
-    ovMarks.textContent = "No marks uploaded yet.";
-  } else {
-    ovMarks.textContent = `Recent marks entries: ${marksSnap.size} (showing last ${marksSnap.size}).`;
+  if (snap.empty) {
+    noticeBoard.textContent = "No active notices.";
+    return;
   }
 
-  const ovNotices = document.getElementById("ovNotices");
-  if (noticesSnap.empty) {
-    ovNotices.innerHTML = `<li>No active notices.</li>`;
-  } else {
-    let htmlList = "";
-    noticesSnap.forEach(doc => {
-      const n = doc.data();
-      const text = n.title || n.message || "(no title)";
-      htmlList += `<li>• ${text}</li>`;
-    });
-    ovNotices.innerHTML = htmlList;
-  }
+  let html = "";
+  snap.forEach(doc => {
+    const n = doc.data();
+    html += `<span class="mr-6">• ${n.title || n.message}</span>`;
+  });
+  noticeBoard.innerHTML = html;
 }
 
 // ======================================================
-// CSV HELPER
+// CSV HELPER (unchanged core logic)
 // ======================================================
 function parseCsv(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+  const lines = text.split(/
+?
+/).filter(l => l.trim() !== "");
   if (lines.length < 2) return [];
   const headers = lines[0].split(",").map(h => h.trim());
   const records = [];
@@ -241,7 +208,7 @@ function handleCsvUpload({ fileInput, msgEl, collection, transform, docId }) {
       }
 
       msgEl.textContent = `Uploading ${records.length} rows...`;
-      const batchSize = 400; // Firestore batch limit 500
+      const batchSize = 400; // Firestore batch limit 500 (safe margin)
       let processed = 0;
 
       while (processed < records.length) {
@@ -322,7 +289,6 @@ function renderStudentsPage() {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       formMsg.textContent = "Student saved.";
-      form.classList.add("opacity-100");
       form.reset();
     } catch (err) {
       console.error(err);
@@ -677,6 +643,10 @@ function renderNoticesPage() {
         <textarea name="message" rows="3"
                   class="input md:col-span-3"
                   placeholder="Full notice text (optional)"></textarea>
+        <input name="expiresAt" class="input md:col-span-1" placeholder="Expiry date (YYYY-MM-DD) optional">
+        <label class="text-[11px] text-slate-400 md:col-span-2 flex items-center">
+          <input type="checkbox" name="pinned" class="mr-2"> Pinned / High Priority
+        </label>
         <button class="btn-primary mt-1 md:col-span-1">Save Notice</button>
       </form>
       <div id="noticeFormMsg" class="text-xs mt-2 text-slate-200"></div>
@@ -695,13 +665,25 @@ function renderNoticesPage() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     formMsg.textContent = "Saving notice...";
-    const data = Object.fromEntries(new FormData(form).entries());
+    const fd = new FormData(form);
+    const data = Object.fromEntries(fd.entries());
+
+    let expiresAtTs = null;
+    if (data.expiresAt) {
+      const d = new Date(data.expiresAt + 'T23:59:59');
+      if (!isNaN(d.getTime())) {
+        expiresAtTs = firebase.firestore.Timestamp.fromDate(d);
+      }
+    }
+
     try {
       await db.collection("notices").add({
         title: data.title,
         message: data.message || "",
         active: data.active === "true",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        pinned: fd.get("pinned") === "on",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expiresAt: expiresAtTs,
       });
       formMsg.textContent = "Notice saved.";
       form.reset();
@@ -731,10 +713,11 @@ async function loadNoticesList(listEl) {
   snap.forEach(doc => {
     const n = doc.data();
     const active = n.active ? "ACTIVE" : "INACTIVE";
+    const pinned = n.pinned ? "⭐" : "";
     html += `
       <li class="border-b border-slate-700/60 py-1 flex justify-between">
         <div>
-          <div class="font-semibold">${n.title || "(no title)"}</div>
+          <div class="font-semibold">${pinned} ${n.title || "(no title)"}</div>
           <div class="text-[11px] text-slate-400">${n.message || ""}</div>
         </div>
         <div class="text-[10px] mt-1 ${n.active ? "text-emerald-300" : "text-slate-500"}">${active}</div>
@@ -744,24 +727,197 @@ async function loadNoticesList(listEl) {
   listEl.innerHTML = html;
 }
 
-// FOOTER TICKER
-async function loadNoticeTicker() {
-  noticeBoard.innerHTML = "Loading notices...";
-  const snap = await db.collection("notices")
-    .where("active", "==", true)
-    .orderBy("createdAt", "desc")
-    .limit(5)
+// ======================================================
+// OVERVIEW PAGE (COUNTS + SNAPSHOT)
+// ======================================================
+async function renderOverview() {
+  const html = `
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div class="panel-card">
+        <div class="text-[11px] text-slate-300">Total Students</div>
+        <div id="ovStudents" class="text-2xl font-bold mt-1">–</div>
+      </div>
+      <div class="panel-card">
+        <div class="text-[11px] text-slate-300">Total Faculty</div>
+        <div id="ovFaculty" class="text-2xl font-bold mt-1">–</div>
+      </div>
+      <div class="panel-card">
+        <div class="text-[11px] text-slate-300">Subjects Offered</div>
+        <div id="ovSubjects" class="text-2xl font-bold mt-1">–</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="panel-card">
+        <div class="text-sm font-semibold mb-2">Marks Summary</div>
+        <div id="ovMarks" class="text-slate-300 text-sm">Loading...</div>
+      </div>
+      <div class="panel-card">
+        <div class="text-sm font-semibold mb-2">Latest Notices</div>
+        <ul id="ovNotices" class="text-xs text-slate-300 space-y-1"></ul>
+      </div>
+    </div>
+  `;
+
+  contentArea.innerHTML = html;
+
+  const [studSnap, facSnap, subSnap, marksSnap, noticesSnap] = await Promise.all([
+    db.collection("students").get(),
+    db.collection("faculty").get(),
+    db.collection("subjects").get(),
+    db.collection("marks").limit(5).get(),
+    db.collection("notices").orderBy("createdAt", "desc").limit(5).get()
+  ]);
+
+  document.getElementById("ovStudents").textContent = studSnap.size;
+  document.getElementById("ovFaculty").textContent  = facSnap.size;
+  document.getElementById("ovSubjects").textContent = subSnap.size;
+
+  const ovMarks = document.getElementById("ovMarks");
+  if (marksSnap.empty) {
+    ovMarks.textContent = "No marks uploaded yet.";
+  } else {
+    ovMarks.textContent = `Recent marks entries: ${marksSnap.size} (showing last ${marksSnap.size}).`;
+  }
+
+  const ovNotices = document.getElementById("ovNotices");
+  if (noticesSnap.empty) {
+    ovNotices.innerHTML = `<li>No active notices.</li>`;
+  } else {
+    let htmlList = "";
+    noticesSnap.forEach(doc => {
+      const n = doc.data();
+      const text = n.title || n.message || "(no title)";
+      htmlList += `<li>• ${text}</li>`;
+    });
+    ovNotices.innerHTML = htmlList;
+  }
+}
+
+// ======================================================
+// SYSTEM MAINTENANCE PAGE (AUTO + MANUAL PURGE)
+// ======================================================
+async function renderMaintenancePage() {
+  contentArea.innerHTML = `
+    <div class="panel-card mb-4">
+      <h3 class="font-semibold mb-2">System Maintenance</h3>
+      <p class='text-xs text-slate-300 mb-3'>
+        Notices auto-expire after <b>30 days</b> or when <b>expiresAt</b> is in the past.
+      </p>
+
+      <div id="maintSummary" class='text-xs mb-3'>Loading summary...</div>
+
+      <button id="purgeNowBtn" class="btn-primary mt-2">🗑 Purge Expired Notices Now</button>
+    </div>
+
+    <div class='panel-card'>
+      <h3 class='font-semibold mb-2'>Purge Logs</h3>
+      <div id='purgeLogs' class='text-xs text-slate-300'>Loading logs...</div>
+    </div>
+  `;
+
+  document.getElementById("purgeNowBtn").onclick = () => {
+    purgeModal.classList.remove("hidden");
+  };
+
+  if (cancelPurgeBtn) {
+    cancelPurgeBtn.onclick = () => purgeModal.classList.add("hidden");
+  }
+  if (confirmPurgeBtn) {
+    confirmPurgeBtn.onclick = runManualPurge;
+  }
+
+  loadMaintenanceSummary();
+  loadPurgeLogs();
+}
+
+// ---- Summary of expired + active notices ----
+async function loadMaintenanceSummary() {
+  const summaryEl = document.getElementById("maintSummary");
+  if (!summaryEl) return;
+
+  const now = firebase.firestore.Timestamp.now();
+  const ageLimit = Date.now() - 30 * 24 * 3600 * 1000;
+  const ageTs = firebase.firestore.Timestamp.fromMillis(ageLimit);
+
+  const [oldSnap, expSnap, activeSnap] = await Promise.all([
+    db.collection("notices").where("createdAt", "<", ageTs).get(),
+    db.collection("notices").where("expiresAt", "<", now).get(),
+    db.collection("notices").where("active", "==", true).get(),
+  ]);
+
+  summaryEl.innerHTML = `
+    <div>Expired by age (30 days): <b>${oldSnap.size}</b></div>
+    <div>Expired by expiresAt: <b>${expSnap.size}</b></div>
+    <div>Active notices: <b>${activeSnap.size}</b></div>
+  `;
+}
+
+// ---- Load purge logs ----
+async function loadPurgeLogs() {
+  const logsEl = document.getElementById("purgeLogs");
+  if (!logsEl) return;
+
+  const snap = await db.collection("purgeLogs")
+    .orderBy("ranAt", "desc")
+    .limit(50)
     .get();
 
   if (snap.empty) {
-    noticeBoard.textContent = "No active notices.";
+    logsEl.textContent = "No purge logs yet.";
     return;
   }
 
-  let html = "";
-  snap.forEach(doc => {
-    const n = doc.data();
-    html += `<span class="mr-6">• ${n.title || n.message}</span>`;
+  let html = `<table class='w-full text-left text-[11px]'>
+    <tr class='text-slate-400'>
+      <th class='py-1'>Date</th>
+      <th>Deleted</th>
+      <th>Mode</th>
+      <th>Errors</th>
+    </tr>`;
+
+  snap.forEach((doc) => {
+    const d = doc.data();
+    const ran = d.ranAt?.toDate().toLocaleString() || "-";
+    html += `
+      <tr class='border-t border-slate-700'>
+        <td class='py-1'>${ran}</td>
+        <td>${d.deletedCount}</td>
+        <td>${d.mode}</td>
+        <td>${(d.errors || []).length ? 'Yes' : 'No'}</td>
+      </tr>`;
   });
-  noticeBoard.innerHTML = html;
+
+  html += `</table>`;
+  logsEl.innerHTML = html;
+}
+
+// ---- Manual purge via Cloud Function ----
+async function runManualPurge() {
+  if (!confirmPurgeBtn) return;
+
+  confirmPurgeBtn.disabled = true;
+  confirmPurgeBtn.textContent = "Processing...";
+
+  try {
+    const purgeFn = functions.httpsCallable("runManualPurge");
+    const result = await purgeFn();
+
+    alert(`Purge complete. Deleted ${result.data.deleted} notices.`);
+
+    purgeModal.classList.add("hidden");
+    confirmPurgeBtn.disabled = false;
+    confirmPurgeBtn.textContent = "Delete";
+
+    loadMaintenanceSummary();
+    loadPurgeLogs();
+    loadNoticeTicker();
+
+  } catch (err) {
+    console.error("Manual purge failed", err);
+    alert("Purge failed: " + (err.message || "Unknown error"));
+
+    confirmPurgeBtn.disabled = false;
+    confirmPurgeBtn.textContent = "Delete";
+  }
 }
