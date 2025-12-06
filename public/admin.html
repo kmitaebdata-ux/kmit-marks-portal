@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KMIT Marks Portal – Admin Dashboard</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { background: #0b1120; }
+    .glass {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+    }
+    h1, h2, h3, h4 { color: #f1f5f9 !important; }
+    .panel-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 16px;
+      color: #e2e8f0;
+    }
+    .input {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #f1f5f9;
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .btn-primary { background: #3b82f6; color:white; padding:8px 14px; border-radius:10px; font-size:13px; }
+    .btn-upload { background:#22c55e; color:white; padding:8px 14px; border-radius:10px; font-size:13px; }
+    .sidebar { background:#0f172a; border-right:1px solid rgba(255,255,255,0.1); }
+    .nav-link { color:#cbd5e1; font-size:14px; padding:10px 14px; border-radius:8px; }
+  </style>
+</head>
+
+<body class="min-h-screen flex">
+  <!-- SIDEBAR -->
+  <aside class="w-64 sidebar text-gray-100 flex flex-col">
+    <div class="p-4 border-b border-slate-700">
+      <h1 class="text-xl font-bold text-slate-100">KMIT Admin Panel</h1>
+      <p class="text-xs text-slate-400">Marks & Users Management</p>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto p-2">
+      <ul class="space-y-1">
+        <li><button class="nav-link w-full text-left" data-page="overview">📊 Overview</button></li>
+
+        <p class="text-[11px] text-slate-500 ml-3 mt-3">MASTER DATA</p>
+        <li><button class="nav-link w-full text-left" data-page="students">👨‍🎓 Students</button></li>
+        <li><button class="nav-link w-full text-left" data-page="faculty">👨‍🏫 Faculty</button></li>
+        <li><button class="nav-link w-full text-left" data-page="subjects">📚 Subjects</button></li>
+        <li><button class="nav-link w-full text-left" data-page="assignments">🧩 Faculty–Subject Map</button></li>
+
+        <p class="text-[11px] text-slate-500 ml-3 mt-3">MARKS & NOTICES</p>
+        <li><button class="nav-link w-full text-left" data-page="marks">📝 Marks Management</button></li>
+        <li><button class="nav-link w-full text-left" data-page="notices">📢 Notices</button></li>
+
+        Security
+        <li><button class="nav-link w-full text-left" data-page="maintenance">🛠 System Maintenance</button></li>
+      </ul>
+    </nav>
+
+    <div class="p-4 border-t border-slate-700 flex items-center justify-between">
+      <div class="text-xs text-slate-300">
+        <div id="adminEmail" class="font-medium"></div>
+        <div id="adminRole"></div>
+      </div>
+      <button id="logoutBtn" class="px-3 py-1 rounded bg-red-500 text-xs">Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col">
+    <header class="glass h-16 flex items-center justify-between px-6 shadow">
+      <div>
+        <h2 id="pageTitle" class="text-xl font-bold">Overview</h2>
+        <p class="text-xs text-slate-300">KMIT Marks Portal – Admin Dashboard</p>
+      </div>
+      <div id="topNotice" class="text-red-400 text-xs font-semibold"></div>
+    </header>
+
+    <section id="contentArea" class="p-6 text-sm text-slate-200">Loading...</section>
+
+    <footer class="glass h-16 flex items-center px-6 text-xs text-slate-200">
+      <span class="mr-3 font-semibold">Notice Board:</span>
+      <div id="noticeBoard" class="overflow-x-auto whitespace-nowrap"></div>
+    </footer>
+  </main>
+
+  <!-- MAINTENANCE: PURGE CONFIRMATION MODAL -->
+  <div id="purgeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 w-96 text-slate-200 shadow-xl">
+      <h3 class="text-lg font-semibold mb-2 text-red-400">Confirm Purge</h3>
+      <p class="text-sm mb-4">Are you sure you want to remove all expired notices? This action cannot be undone.</p>
+      <div class="flex justify-end space-x-2">
+        <button id="cancelPurgeBtn" class="px-4 py-2 rounded bg-slate-600 hover:bg-slate-500 text-xs">Cancel</button>
+        <button id="confirmPurgeBtn" class="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-xs">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
+
